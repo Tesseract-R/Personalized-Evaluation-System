@@ -12,3 +12,6 @@
 - 社交平台
 
 ### 可行性研究报告：[链接](可研报告/可研报告.pdf)
+### 需求规约说明书：[链接]()
+
+### 第一次线下会议记录：[链接](https://github.com/Tesseract-R/Personalized-Evaluation-System/blob/main/%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95/11%E6%9C%8813%E6%97%A5%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95.md)
