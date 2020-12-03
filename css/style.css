@@ -1,0 +1,62 @@
+body
+{
+    margin: 0;
+    padding: 0;
+    background-image: url("../img/black-1072366_1920.jpg");
+    background-repeat: no-repeat;
+}
+
+#bigBox
+{
+    margin: 0 auto;
+    margin-top: 200px;
+    padding: 20px 50px;
+    background-color: #00000080;
+    width: 400px;
+    height: 300px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+#bigBox h1
+{
+    color: white;
+}
+
+#bigBox .inputBox
+{
+    margin-top: 50px;
+
+}
+
+#bigBox .inputBox .inputText
+{
+    margin-top: 20px;
+}
+
+#bigBox .inputBox .inputText input
+{
+    border: 0;
+    padding: 10px 10px;
+    border-bottom: 1px solid white;
+    background-color: #00000000;
+    color: white;
+}
+#bigBox .inputBox .inputText span
+{
+    color: white;
+}
+
+#bigBox .inputBox .inputButton
+{
+    border: 0;
+    width: 100px;
+    height: 25px;
+    color: white;
+    margin-top: 30px;
+    border-radius: 20px;
+    background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+}
+
+
+
