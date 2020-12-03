@@ -20,3 +20,5 @@
 ### 第一次线下会议记录（11/13）：[链接](https://github.com/Tesseract-R/Personalized-Evaluation-System/blob/main/%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95/11%E6%9C%8813%E6%97%A5%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95.md)
 
 ### 第二次线下会议记录（11/18）：[链接](https://github.com/Tesseract-R/Personalized-Evaluation-System/blob/main/%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95/11%E6%9C%8818%E6%97%A5%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95.md)
+
+### 第三次线下会议记录（12/2）：[链接](https://github.com/Tesseract-R/Personalized-Evaluation-System/blob/main/%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95/12%E6%9C%882%E6%97%A5%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95.png)
