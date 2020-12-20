@@ -13,7 +13,7 @@ body
     padding: 20px 50px;
     background-color: #00000080;
     width: 600px;
-    height: 400px;
+    height: 450px;
     border-radius: 10px;
     text-align: center;
 }
@@ -26,6 +26,12 @@ body
 #bigBox .inputBox h2
 {
     color: white;
+}
+
+#bigBox .inputBox h7
+{
+    color: white;
+    font-size: small;
 }
 
 #bigBox .inputBox

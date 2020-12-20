@@ -24,8 +24,9 @@ urlpatterns = [
     path(r'adminindex/', views.adminindex),   # 管理员登录界面
     path(r'teacherindex/', views.teacherindex),    # 教师登录界面
     path(r'studentindex/', views.studentindex),    # 学生登录界面
-    path(r'login/', views.login),     # 登录
+    # path(r'login/', views.login),     # 登录
+    path(r'index/', views.index),     # 登录
     path(r'logout/', views.logout),   # 登出
-
+    path(r'view_score/', views.view_score),
 
 ]
