@@ -29,5 +29,5 @@ urlpatterns = [
     path(r'logout/', views.logout),   # 登出
     path(r'view_score/', views.view_score),
     path(r'add_remove_user/', views.add_remove_user),
-
+    path(r'change_permission/', views.change_permission),
 ]

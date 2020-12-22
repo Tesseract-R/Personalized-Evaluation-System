@@ -1,27 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-   
-    
+
+
 	<title>用户界面</title>
-	
+    <link href="/static/css/submit.css" rel="stylesheet">
+
 	<!-- Bootstrap core CSS -->
 	<link rel="stylesheet" href="/static/css/bootstrap.min.css">
-	
+
     <!-- Custom Fonts -->
 	<link href="/static/css/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-        
+
     <!-- Custom styles for this template -->
     <link rel="stylesheet" type="text/css" href="/static/css/style_user.css">
 	<link rel="stylesheet" type="text/css" href="/static/css/style-responsive.css">
 	<link href="/static/css/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 	<link rel="stylesheet" href="/static/css/metisMenu.css">
 
-	
+
 	<script src="/static/js/jquery.js"></script>
 	<script src="/static/js/bootstrap.min.js"></script>
 	<script src="/static/js/metisMenu.min.js"></script>
@@ -29,9 +29,10 @@
 $(function() {
     $('#side-menu').metisMenu(); // ul.nav#side-menu
 })
+
 </script>
-    
-	
+
+
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -39,15 +40,16 @@ $(function() {
         <script src="template/js/respond.min.js"></script>
     <![endif]-->
     <style type="text/css">
-.STYLE1 {font-size:24px
+.STYLE1 {font-size:24px;
 	font-weight: bold;
 	color: #FFFFFF;
 }
 .STYLE2 {font-size: 10px}
-.STYLE3 {color: #F0F0F0}
+.STYLE3 {color: #0b0b0b;
+}
 .header-text1 {
-    font-size:18px;
-    position: absolute;
+    font-size:22px;
+    position: center;
     bottom: 0px;
     left: 0px;
     z-index: 1000;
@@ -62,7 +64,7 @@ $(function() {
     bottom: 0px;
     width:210px; /* same as .content left */
     background-color: #fff;
-    border-right: 1px solid #000; 
+    border-right: 1px solid #000;
     z-index: 10;
 	color:0,0,0,0;
 }
@@ -82,7 +84,7 @@ $(function() {
 		<!--logo start-->
 		<a href="#" class="logo"><strong>北京大学软件与微电子学院</strong></a>
 		<!--logo end-->
-		
+
 		<div class="top-menu">
             <ul class="nav pull-right top-menu">
 				<li><a class="social" href="/logout/">登出</a></li>
@@ -93,115 +95,38 @@ $(function() {
 		</div>
 	</header>
 	<!--header end-->
-	<!--sidebar start-->
-	<aside>
-	<div class="sideNav" role="navigation" style="position:absolute; background-color:rgba(0,0,0,0); border-right:0px">
-		<div id="sidebar"  class="nav-collapse ">
-			<!-- sidebar menu start-->
-			<ul class="sidebar-menu" id="side-menu">
-				<li>
-                    <a href="#"><i class="fa fa-tags"></i>首页</a>
-                 </li>
-				 <li>
-                    <a href="#"><i class="fa fa-tags"></i>学生信息<span class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level">
-                        <li>
-                            <a href="#">平时成绩</a>
-                        </li>
-                        <li>
-                            <a href="/view_score/">期末考试预测</a>
-                        </li>
-						<li>
-							<a href="#">个性化评价</a>
-						</li>
-                    </ul>
-                 </li>
-                 <li>
-                    <a href="#"><i class="fa fa-tags"></i>更新信息<span class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level">
-                        <li>
-                            <a href="#">修改学生信息</a>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#"><i class="fa fa-tags"></i>管理员权限<span class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level">
-                        <li>
-                            <a href="/change_permission/">修改用户权限</a>
-                        </li>
-                        <li>
-                            <a href="/add_remove_user/">增加/删除用户</a>
-                        </li>
-						<li>
-							<a href="#">版本控制</a>
-						</li>
-                    </ul>
-                </li>
-			</ul>
-		  <!-- sidebar menu end-->
-		</div>
-		</div>
-	</aside>
-    <!--sidebar end-->
 
 	<!--main content start-->
 	<section id="main-content">
 		<section class="wrapper">
 			<!-- Carousel -->
-			
+
 			<div class="no-gutter">
-				<div class="col-lg-6">
-					<article class="box-shadow" style="height:500px">
-						<div class="no-gutter">
-							<div class="col-sm-6">
-								<div class="art-content text-center">
-									<div class="heading">
-                                        <br>
-                                        <br>
-										<h2>学生的信息</h2>
-										<hr class="line">
-									</div>
-								</div>
-							</div>
-						</div>
-					</article>
-					<article  class="box-shadow" style="height:450px">
-						<div class="no-gutter">
-							<div class="col-sm-6">
-								<div class="art-content text-center">
-									<div class="heading">
-										<h2>学生的平时成绩</h2>
-										<hr class="line">
-									</div>
-								</div>
-							</div>
-						</div>
-					</article>
-				</div>
-				<div class="col-lg-6">
-					<article  class="box-shadow" style="height:500px">
-					  <div class="no-gutter">
-							<div class="col-sm-6">
-								<div class="art-content text-center">
-									<div class="heading">
-                                        <br>
-                                        <br>
-										<h2>学生的期末考试预测</h2>
-										<hr class="line">
-									</div>
-								</div>
-							</div>
-						    </div>
-					</article>
-					<article  class="box-shadow" style="height:450px">
+				<div class="col-lg-12">
+					<article class="box-shadow" style="height:870px">
 						<div class="no-gutter">
 							<div class="col-sm-12">
 								<div class="art-content text-center">
 									<div class="heading">
-										<h2>学生的个性化评价</h2>
+                                        <br>
+                                        <br>
+										<h2>修改用户权限</h2>
 										<hr class="line">
 									</div>
+                                    <p align="left" class="header-text1">我的编号：{{ name }}</p>
+                                    <form class="form-submit" action="" method="post">
+                                        <br>
+                                        <p class="header-text1">{{ obj.user_id.label }}   {{ obj.user_id }}
+                                        <br>
+                                        <p class="header-text1">{{ obj.user_type.label }}   {{ obj.user_type }}
+                                        <br>
+                                        <input class="btn btn-lg btn-primary btn-block" name="add" type="submit" value="修改">
+                                    </form>
+                                    <br>
+                                    <br>
+                                    <div>
+                                        修改{{ user_type }}用户： {{ user_id }}权限从{{ type_before }}至{{ type_after }} {{ msg }}
+                                    </div>
 								</div>
 							</div>
 						</div>
@@ -210,20 +135,21 @@ $(function() {
 			</div>
 		</section><!-- /wrapper -->
 	</section><!-- /MAIN CONTENT -->
-	
+
 	<!--main content end-->
 	<!--footer start-->
 	<footer class="site-footer">
 	  <div class="text-center">
-		         <div align="center">Copyright &copy; 北京大学软件与微电子学院 2020 · 地址：北京市大兴工业开发区金苑路24号 邮编：102600></div>
+		         <div align="center">Copyright &copy; 北京大学软件与微电子学院 2020 · 地址：北京市大兴工业开发区金苑路24号 邮编：102600
+                 </div>
 	  </div>
 	</footer>
 	<!--footer end-->
-	
-	
+
+
 	<!-- js placed at the end of the document so the pages load faster -->
 	<script src="/static/js/jquery.nicescroll.js"></script>
-	
+
     <!--common script for all pages-->
     <script src="/static/js/common-scripts.js"></script>
 

@@ -122,13 +122,13 @@ $(function() {
                                         <br>
                                         <p class="header-text1">{{ obj.user_type.label }}   {{ obj.user_type }}
                                         <br>
-                                        <button class="btn btn-lg btn-primary btn-block" type="submit">增加</button>
-                                        <button class="btn btn-lg btn-primary btn-block" type="submit">删除</button>
+                                        <input class="btn btn-lg btn-primary btn-block" name="add" type="submit" value="增加"></input>
+                                        <input class="btn btn-lg btn-primary btn-block" name="delete" type="submit" value="删除"></input>
                                     </form>
                                     <br>
                                     <br>
                                     <div>
-                                        学生 {{ student_id }} {{ msg }}
+                                        {{ user_type }} {{ student_id }} {{ msg }}
                                     </div>
 								</div>
 							</div>
