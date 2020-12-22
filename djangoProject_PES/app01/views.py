@@ -2,9 +2,32 @@ from django.shortcuts import render, HttpResponse, redirect
 from app01 import models
 import pymysql
 
+from django import forms
+from django.forms import fields
+from django.forms import widgets
+
+
 import pymysql
 
 # Create your views here.
+
+class TestForm(forms.Form):
+    user_id = fields.CharField(
+        required=True,
+        max_length=30,
+        min_length=3,
+        error_messages={"required":'不能为空'},)
+
+    user_name = fields.CharField(
+        required=True,
+        max_length=30,
+        min_length=3,
+        error_messages={"required":'不能为空'},)
+
+    user_type =fields.ChoiceField(
+        choices=[('TEACHER',"老师"),('TA',"助教"),('STUDENT',"学生"),('ADMIN',"管理员")], #单选下拉框
+        initial='STUDENT'
+    )
 
 
 def adminindex(request, name):
@@ -12,8 +35,6 @@ def adminindex(request, name):
 
 
 def teacherindex(request, name):
-
-
     return render(request, 'teacherindex.html', {'name': name})
 
 
@@ -24,56 +45,32 @@ def studentindex(request, name):
                        'detailed_design': 'null', 'demand_analysis': 'null',
                        'realization': 'null', 'maintenance': 'null', 'final_score': 'null'})
         # return render(request,'predict_score.html',{'name':name})
-
-    # 连接database
-    conn = pymysql.connect("localhost", "root", "california", "seconddegree")
-
-    # 查询期末成绩
-    try:
-        # 得到一个可以执行SQL语句的光标对象
-        cursor1 = conn.cursor()  # 执行完毕返回的结果集默认以元组显示
-        sql = "SELECT final_score FROM final_score where student_id = '" + name + "'";
-        # 执行SQL语句
-        cursor1.execute(sql)
-        results = cursor1.fetchall()
-        cursor1.close()
-    except:
-        print("查询失败")
-    final_score = results[0][0]
-    # 查询平时成绩
-    try:
-        # 得到一个可以执行SQL语句的光标对象
-        cursor2 = conn.cursor()  # 执行完毕返回的结果集默认以元组显示
-        sql = "SELECT * FROM inclass_test where student_id = '" + name + "'";
-        # 执行SQL语句
-        cursor2.execute(sql)
-        results = cursor2.fetchall()
-        cursor2.close()
-    except:
-        print("查询失败")
-    structure_design = results[0][1]
-    software_process = results[0][2]
-    detailed_design = results[0][3]
-    demand_analysis = results[0][4]
-    realization = results[0][5]
-    maintenance = results[0][6]
-
-    return render(request, 'studentindex.html', {'name': name,'structure_design':structure_design,'software_process':software_process,
+    ret_name = models.User.objects.filter(userid=name)
+    username = ret_name[0].username
+    ret = models.result_store.objects.filter(userid=name)
+    structure_design = ret[0].inclass_score1
+    software_process = ret[0].inclass_score2
+    detailed_design = ret[0].inclass_score3
+    demand_analysis = ret[0].inclass_score4
+    realization = ret[0].inclass_score5
+    maintenance = ret[0].inclass_score6
+    final_score = ret[0].final_score
+    comment = ret[0].comment
+    return render(request, 'studentindex.html', {'name': username,'structure_design':structure_design,'software_process':software_process,
                                                  'detailed_design':detailed_design,'demand_analysis':demand_analysis,
-                                                 'relization':realization,'maintenance':maintenance,'final_score':final_score})
+                                                 'realization':realization,'maintenance':maintenance,'final_score':final_score,'comment':comment})
 
 def index(request):
-
     # 返回结果
     error_msg = ""
     if request.method == "POST":
         user = request.POST['username']
         pwd = request.POST['password']
-        if not models.User.objects.filter(username=user):
+        if not models.User.objects.filter(userid=user):
             error_msg = "登录失败，该用户不存在！"
             return render(request, 'index.html', {"error": error_msg})
 
-        ret = models.User.objects.filter(username=user, password=pwd)
+        ret = models.User.objects.filter(userid=user, password=pwd)
         if ret:  # 登陆成功
             if ret[0].usertype == 'ADMIN':  # 根据用户身份导向不同的页面
                 return adminindex(request, user)
@@ -93,14 +90,38 @@ def logout(request):
 
 
 def view_score(request):
-    print(request)
     if request.method == "POST":
-        user_name = request.POST['001']
-        print(user_name)
-        if not models.result_store.objects.filter(username=user_name):
-            return_value = "该学生不存在！"
+        user_id = request.POST['001']
+        user_name = request.POST['002']
+        if user_id == "":
+            if not models.User.objects.filter(username=user_name):
+                return render(request, 'view_score.html',{'name':'test', 'student_id':user_name, 'score':"该学生不存在！"})
+            ret = models.User.objects.filter(username=user_name)
+            user_id = ret[0].userid
+        if not models.result_store.objects.filter(userid=user_id):
+            return render(request, 'view_score.html',{'name':'test', 'student_id':user_name, 'score':"该学生不存在！"})
         else:
-            ret = models.result_store.objects.filter(username=user_name)
-            return_value = ret[0].score
+            ret = models.result_store.objects.filter(userid=user_id)
+            ret_name = models.User.objects.filter(userid=user_id)
+            user_name = ret_name[0].username
+            return_value = ret[0].final_score
         return render(request, 'view_score.html',{'name':'test', 'student_id':user_name, 'score':return_value})
     return render(request, 'view_score.html',{'name':'test'})
+
+
+def add_remove_user(request):
+    if request.method == "POST":
+        obj = TestForm(request.POST)
+        user_id = obj.data['user_id']
+        if models.User.objects.filter(username=user_id):
+            msg = "用户的学号已经存在！"
+            return render(request, 'add_remove_user.html', {"obj": obj, 'name': 'test', 'student_id': user_id, 'msg': msg})
+        else:
+            user_name = obj.data['user_name']
+            user_type = obj.data['user_type']
+            models.User.objects.create(userid=user_id,username=user_name,password="123456",usertype=user_type)
+            models.result_store.objects.create(userid=user_id, inclass_score1=0,inclass_score2=0,inclass_score3=0,inclass_score4=0,inclass_score5=0,inclass_score6=0,final_score=0,comment='default')
+            msg = "创建成功"
+            return render(request, 'add_remove_user.html',{"obj": obj, 'name':'test', 'student_id':user_id, 'msg':msg})
+    obj = TestForm()
+    return render(request, 'add_remove_user.html',{"obj": obj,'name':'test'})
