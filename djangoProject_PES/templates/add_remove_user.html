@@ -105,30 +105,54 @@ $(function() {
 				<div class="col-lg-12">
 					<article class="box-shadow" style="height:870px">
 						<div class="no-gutter">
-							<div class="col-sm-12">
+							<div class="col-sm-6">
 								<div class="art-content text-center">
 									<div class="heading">
                                         <br>
                                         <br>
-										<h2>增加删除用户</h2>
+										<h2>增加用户</h2>
 										<hr class="line">
 									</div>
                                     <p align="left" class="header-text1">我的学号：{{ name }}</p>
                                     <form class="form-submit" action="" method="post">
                                         <br>
-                                        <p class="header-text1">{{ obj.user_id.label }}   {{ obj.user_id }}
+                                        <p class="header-text1">{{ obj_add.user_id.label }}   {{ obj_add.user_id }}
                                         <br>
-                                        <p class="header-text1">{{ obj.user_name.label }}   {{ obj.user_name }}
+                                        <p class="header-text1">{{ obj_add.user_name.label }}   {{ obj_add.user_name }}
                                         <br>
-                                        <p class="header-text1">{{ obj.user_type.label }}   {{ obj.user_type }}
+                                        <p class="header-text1">{{ obj_add.user_type.label }}   {{ obj_add.user_type }}
                                         <br>
-                                        <input class="btn btn-lg btn-primary btn-block" name="add" type="submit" value="增加"></input>
-                                        <input class="btn btn-lg btn-primary btn-block" name="delete" type="submit" value="删除"></input>
+                                        <input class="btn btn-lg btn-primary btn-block" name="add" type="submit" value="增加">
                                     </form>
                                     <br>
                                     <br>
                                     <div>
-                                        {{ user_type }} {{ student_id }} {{ msg }}
+                                        {{ user_type }} {{ user_id_add }} {{ msg_add }}
+                                    </div>
+								</div>
+							</div>
+                            <div class="col-sm-6">
+								<div class="art-content text-center">
+									<div class="heading">
+                                        <br>
+                                        <br>
+										<h2>删除用户</h2>
+										<hr class="line">
+									</div>
+                                    <form class="form-submit" action="" method="post">
+                                        <br>
+                                        <br>
+                                        <br>
+                                        <p class="header-text1">{{ obj_delete.user_id.label }}   {{ obj_delete.user_id }}
+                                        <br>
+                                        <br>
+                                        <br>
+                                        <input class="btn btn-lg btn-primary btn-block" name="delete" type="submit" value="删除">
+                                    </form>
+                                    <br>
+                                    <br>
+                                    <div>
+                                        {{ student_id }} {{ msg_delete }}
                                     </div>
 								</div>
 							</div>
