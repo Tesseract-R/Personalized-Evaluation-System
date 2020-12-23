@@ -1,3 +1,4 @@
+import joblib
 from django.shortcuts import render, HttpResponse, redirect
 from app01 import models
 import pymysql
@@ -6,6 +7,7 @@ from django import forms
 from django.forms import fields
 from django.forms import widgets
 
+from sklearn.preprocessing import MinMaxScaler
 import pymysql
 
 
@@ -40,6 +42,30 @@ class deleteForm(forms.Form):
     def __init__(self,*args,**kwargs):
         super(deleteForm,self).__init__(*args,**kwargs)
         self.fields['user_id'].widget.choices=models.User.objects.values_list('userid','username')
+
+
+class queryForm(forms.Form):
+    score1 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    score2 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    score3 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    score4 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    score5 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    score6 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    view_time = fields.FloatField(
+        max_value=1000, min_value=0,
+    )
 
 
 def adminindex(request, name):
@@ -177,7 +203,7 @@ def change_permission(request):
         user_id = obj.data['user_id']
         if user_id == 'admin':
             return render(request, 'change_permission.html',
-                          {"obj": obj, 'name': 'admin', 'user_id': user_id, 'msg': "不允许修改超级管理员权限！"})
+                          {"obj": obj, 'name': 'admin', 'msg': "不允许修改超级管理员权限！"})
         if not models.User.objects.filter(userid=user_id):
             msg = "用户不存在！"
             return render(request, 'change_permission.html',
@@ -195,3 +221,31 @@ def change_permission(request):
                            'type_before': type_before, 'type_after': type_after})
     obj = deleteForm()
     return render(request, 'change_permission.html', {"obj": obj, 'name': 'admin'})
+
+
+def self_predict(request):
+    if request.method == "POST":
+        # 读取模型
+            # 之后更新SVM模型后也需要更改路径
+        path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib_231328'
+        svm_model = joblib.load(path)
+
+        # 获取数据
+        obj = queryForm(request.POST)
+        data_list = []
+        data_list.append(int(obj.data['score1']))
+        data_list.append(int(obj.data['score2']))
+        data_list.append(int(obj.data['score3']))
+        data_list.append(int(obj.data['score4']))
+        data_list.append(int(obj.data['score5']))
+        data_list.append(int(obj.data['score6']))
+        data_list.append(int(obj.data['view_time']))
+        # 归一化
+        mm = MinMaxScaler()
+        data_normal = mm.fit_transform([data_list])
+        # 预测
+        result_score = svm_model.predict(data_normal)[0]
+
+        return render(request, 'self_predict.html', {"obj": obj, 'name': 'test', 'msg': '你的成绩预测为：', 'result': round(result_score,2)})
+    obj = queryForm()
+    return render(request, 'self_predict.html', {"obj": obj, 'name': 'test'},)
