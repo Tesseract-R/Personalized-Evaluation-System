@@ -15,29 +15,40 @@ import pymysql
 
 class addForm(forms.Form):
     user_id = fields.CharField(
+        label='学号/编号',
         required=True,
         max_length=30,
         min_length=3,
         error_messages={"required": '不能为空'})
 
     user_name = fields.CharField(
+        label='用户名',
         required=False,
         max_length=30,
         min_length=3,
         error_messages={"required": '不能为空'}, )
 
     user_type = fields.ChoiceField(
+        label='用户类型',
         choices=[('TEACHER', "老师"), ('TA', "助教"), ('STUDENT', "学生"), ('ADMIN', "管理员")],  # 单选下拉框
         initial='STUDENT'
     )
 
 class deleteForm(forms.Form):
     user_id = fields.CharField(
+        label='用户名',
         widget = widgets.Select())
 
     user_type = fields.ChoiceField(
+        label='用户类型',
         choices=[('TEACHER', "老师"), ('TA', "助教"), ('STUDENT', "学生"), ('ADMIN', "管理员")],  # 单选下拉框
         initial='STUDENT')
+
+    checkbox = fields.ChoiceField(
+        required=True,
+        label="确定删除",
+        widget=forms.widgets.CheckboxInput()
+    )
 
     def __init__(self,*args,**kwargs):
         super(deleteForm,self).__init__(*args,**kwargs)
@@ -167,12 +178,13 @@ def add_remove_user(request):
                 user_name = obj_add.data['user_name']
                 user_type = obj_add.data['user_type']
                 models.User.objects.create(userid=user_id, username=user_name, password="123456", usertype=user_type)
-                models.result_store.objects.create(userid=user_id, inclass_score1=0, inclass_score2=0, inclass_score3=0,
+                if user_type == 'STUDENT':
+                    models.result_store.objects.create(userid=user_id, inclass_score1=0, inclass_score2=0, inclass_score3=0,
                                                    inclass_score4=0, inclass_score5=0, inclass_score6=0, final_score=0,
                                                    comment='default')
                 msg = "创建成功"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': 'admin', 'user_id_add': user_id, 'msg_add': msg, 'user_type':user_type})
+                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': 'admin', 'user_id_add': user_id, 'msg_add': msg, 'user_type': user_type})
         if 'delete' in request.POST:
             obj_delete = deleteForm(request.POST)
             print(obj_delete)
@@ -180,11 +192,13 @@ def add_remove_user(request):
             user_id = obj_delete.data['user_id']
             if user_id == 'admin':
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": addForm(), "obj_delete": obj_delete, 'name': 'admin', 'student_id': user_id, 'msg_delete': "不允许删除超级管理员"})
+                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': 'admin',
+                               'student_id': user_id, 'msg_delete': "不允许删除超级管理员"})
             if not models.User.objects.filter(userid=user_id):
                 msg = "待删除用户不存在！"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": addForm(), "obj_delete": obj_delete, 'name': 'admin', 'student_id': user_id, 'msg_delete': msg})
+                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': 'admin',
+                               'student_id': user_id, 'msg_delete': msg})
             else:
                 q1 = models.User.objects.filter(userid=user_id).last()
                 q1.delete()
@@ -193,7 +207,8 @@ def add_remove_user(request):
                     q2.delete()
                 msg = "删除成功"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": addForm(), "obj_delete": obj_delete, 'name': 'admin', 'student_id': user_id, 'msg_delete': msg})
+                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': 'admin',
+                               'student_id': user_id, 'msg_delete': msg})
     return render(request, 'add_remove_user.html', {"obj_add": addForm(),"obj_delete": deleteForm(), 'name': 'admin'})
 
 
