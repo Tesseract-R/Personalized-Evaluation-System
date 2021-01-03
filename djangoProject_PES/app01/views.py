@@ -37,7 +37,7 @@ class addForm(forms.Form):
 class deleteForm(forms.Form):
     user_id = fields.CharField(
         label='用户名',
-        widget = widgets.Select())
+        widget=widgets.Select())
 
     user_type = fields.ChoiceField(
         label='用户类型',
@@ -54,29 +54,51 @@ class deleteForm(forms.Form):
         super(deleteForm,self).__init__(*args,**kwargs)
         self.fields['user_id'].widget.choices=models.User.objects.values_list('userid','username')
 
+class RequestForm(forms.Form):   # 这个是用于找所有学生信息的
+    user_id = fields.CharField(
+        label='学生学号',
+        widget=widgets.Select())
 
-class queryForm(forms.Form):
-    score1 = fields.FloatField(
+    def __init__(self,*args,**kwargs):
+        super(RequestForm,self).__init__(*args,**kwargs)
+        self.fields['user_id'].widget.choices=models.result_store.objects.values_list('id','userid')
+
+class SubmitForm(forms.Form):
+    user_id = fields.CharField(
+        label='用户名',
+        widget=widgets.Select())
+    inclass_score1 = fields.FloatField(
         max_value=200, min_value=0,
+        required=False,
     )
-    score2 = fields.FloatField(
+    inclass_score2 = fields.FloatField(
         max_value=200, min_value=0,
+        required=False,
     )
-    score3 = fields.FloatField(
+    inclass_score3 = fields.FloatField(
         max_value=200, min_value=0,
+        required=False,
     )
-    score4 = fields.FloatField(
+    inclass_score4 = fields.FloatField(
         max_value=200, min_value=0,
+        required=False,
     )
-    score5 = fields.FloatField(
+    inclass_score5 = fields.FloatField(
         max_value=200, min_value=0,
+        required=False,
     )
-    score6 = fields.FloatField(
+    inclass_score6 = fields.FloatField(
         max_value=200, min_value=0,
+        required=False,
     )
     view_time = fields.FloatField(
         max_value=1000, min_value=0,
+        required=False,
     )
+    def __init__(self,*args,**kwargs):
+        super(SubmitForm,self).__init__(*args,**kwargs)
+        self.fields['user_id'].widget.choices=models.result_store.objects.values_list('userid','userid')
+
 
 
 def adminindex(request, name):
@@ -144,25 +166,15 @@ def logout(request):
 
 def view_score(request):
     if request.method == "POST":
-        user_id = request.POST['001']
-        user_name = request.POST['002']
-        if user_id == "":
-            if not models.User.objects.filter(username=user_name):
-                return render(request, 'view_score.html',
-                              {'name': 'test', 'student_id': user_name, 'score': "该学生不存在！"})
-            ret = models.User.objects.filter(username=user_name)
-            user_id = ret[0].userid
-        if not models.result_store.objects.filter(userid=user_id):
-            return render(request, 'view_score.html',
-                          {'name': 'test', 'student_id': user_name, 'score': "该学生不存在！"})
-        else:
-            ret = models.result_store.objects.filter(userid=user_id)
-            ret_name = models.User.objects.filter(userid=user_id)
-            user_name = ret_name[0].username
-            return_value = ret[0].final_score
+        obj = RequestForm(request.POST)
+        id = obj.data['user_id']
+        ret = models.result_store.objects.filter(id=id)
+        user_id = ret[0].userid
+        final_score = ret[0].final_score
         return render(request, 'view_score.html',
-                      {'name': 'test', 'student_id': user_name, 'score': return_value})
-    return render(request, 'view_score.html', {'name': 'test'})
+                          {"obj": obj, 'name': 'test',
+                           'student_id': user_id, 'score': final_score})
+    return render(request, 'view_score.html', {'name': 'test','obj':RequestForm()})
 
 
 def add_remove_user(request):
@@ -187,8 +199,6 @@ def add_remove_user(request):
                               {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': 'admin', 'user_id_add': user_id, 'msg_add': msg, 'user_type': user_type})
         if 'delete' in request.POST:
             obj_delete = deleteForm(request.POST)
-            print(obj_delete)
-            print(obj_delete.data)
             user_id = obj_delete.data['user_id']
             if user_id == 'admin':
                 return render(request, 'add_remove_user.html',
@@ -246,14 +256,14 @@ def self_predict(request):
         svm_model = joblib.load(path)
 
         # 获取数据
-        obj = queryForm(request.POST)
+        obj = SubmitForm(request.POST)
         data_list = []
-        data_list.append(int(obj.data['score1']))
-        data_list.append(int(obj.data['score2']))
-        data_list.append(int(obj.data['score3']))
-        data_list.append(int(obj.data['score4']))
-        data_list.append(int(obj.data['score5']))
-        data_list.append(int(obj.data['score6']))
+        data_list.append(int(obj.data['inclass_score1']))
+        data_list.append(int(obj.data['inclass_score2']))
+        data_list.append(int(obj.data['inclass_score3']))
+        data_list.append(int(obj.data['inclass_score4']))
+        data_list.append(int(obj.data['inclass_score5']))
+        data_list.append(int(obj.data['inclass_score6']))
         data_list.append(int(obj.data['view_time']))
         # 归一化
         mm = MinMaxScaler()
@@ -262,5 +272,41 @@ def self_predict(request):
         result_score = svm_model.predict(data_normal)[0]
 
         return render(request, 'self_predict.html', {"obj": obj, 'name': 'test', 'msg': '你的成绩预测为：', 'result': round(result_score,2)})
-    obj = queryForm()
+    obj = SubmitForm()
     return render(request, 'self_predict.html', {"obj": obj, 'name': 'test'},)
+
+def update_detail(request):
+    if request.method == "POST":
+        obj = SubmitForm(request.POST)
+        user_id = obj.data['user_id']
+
+        ret = models.result_store.objects.get(userid=user_id)
+        dict = {}
+        dict['inclass_score1'] = obj.data['inclass_score1']
+        dict['inclass_score2'] = obj.data['inclass_score2']
+        dict['inclass_score3'] = obj.data['inclass_score3']
+        dict['inclass_score4'] = obj.data['inclass_score4']
+        dict['inclass_score5'] = obj.data['inclass_score5']
+        dict['inclass_score6'] = obj.data['inclass_score6']
+        dict['view_time'] = obj.data['view_time']
+        for i in dict.keys():
+            if dict.get(i) != "":
+                if i == "inclass_score1":
+                    ret.inclass_score1 = dict.get(i)
+                if i == "inclass_score2":
+                    ret.inclass_score2 = dict.get(i)
+                if i == "inclass_score3":
+                    ret.inclass_score3 = dict.get(i)
+                if i == "inclass_score4":
+                    ret.inclass_score4 = dict.get(i)
+                if i == "inclass_score5":
+                    ret.inclass_score5 = dict.get(i)
+                if i == "inclass_score6":
+                    ret.inclass_score6 = dict.get(i)
+        ret.save()
+        msg = "修改成功"
+
+        return render(request, 'update_detail.html',
+                      {"obj": obj, 'name': 'admin', 'user_id': user_id, 'msg': msg})
+    obj = SubmitForm()
+    return render(request, 'update_detail.html', {"obj": obj, 'name': 'admin'})

@@ -136,7 +136,6 @@ $(function() {
 	<section id="main-content">
 		<section class="wrapper">
 			<!-- Carousel -->
-			
 			<div class="no-gutter">
 				<div class="col-lg-12">
 					<article class="box-shadow" style="height:870px">
@@ -149,19 +148,11 @@ $(function() {
 										<h2>查询学生信息</h2>
 										<hr class="line">
 									</div>
-                                    <p align="left" class="header-text1">我的学号：{{ name }}</p>
                                     <form class="form-submit" action="" method="post" novalidate>
                                         <br>
-                                        <label for="inputID" class="sr-only">输入学号</label>
+                                        <p class="header-text1">{{ obj.user_id.label }}   {{ obj.user_id }}
                                         <br>
-                                        <input type="text" id="001" class="form-control" name="001" placeholder="输入学号" required="" autofocus="autofocus">
-                                        <br>
-                                        <label for="inputName" class="sr-only">（可选）输入姓名</label>
-                                        <br>
-                                        <input type="text" id="002" class="form-control" name="002" placeholder="（可选）输入姓名" required="">
-                                        <br>
-                                        <br>
-                                        <button class="btn btn-lg btn-primary btn-block" type="submit">提交</button>
+                                        <input class="btn btn-lg btn-primary btn-block" name="submit" type="submit" value="提交">
                                     </form>
                                     <br>
                                     <br>

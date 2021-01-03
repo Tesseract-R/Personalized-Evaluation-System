@@ -31,4 +31,5 @@ urlpatterns = [
     path(r'add_remove_user/', views.add_remove_user),
     path(r'change_permission/', views.change_permission),
     path(r'self_predict/',views.self_predict),
+    path(r'update_detail/',views.update_detail),
 ]

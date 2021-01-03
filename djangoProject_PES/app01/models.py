@@ -17,5 +17,6 @@ class result_store(models.Model):
     inclass_score4 = models.FloatField(max_length=32)
     inclass_score5 = models.FloatField(max_length=32)
     inclass_score6 = models.FloatField(max_length=32)
+    # view_time = models.FloatField(max_length=32)
     final_score = models.FloatField(max_length=32)
     comment = models.CharField(max_length=2048)
