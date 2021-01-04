@@ -8,6 +8,7 @@
    
     
 	<title>用户界面</title>
+    <link href="/static/css/submit.css" rel="stylesheet">
 	
 	<!-- Bootstrap core CSS -->
 	<link rel="stylesheet" href="/static/css/bootstrap.min.css">
@@ -39,7 +40,7 @@ $(function() {
         <script src="template/js/respond.min.js"></script>
     <![endif]-->
     <style type="text/css">
-.STYLE1 {font-size:24px
+.STYLE1 {font-size:24px;
 	font-weight: bold;
 	color: #FFFFFF;
 }
@@ -47,7 +48,7 @@ $(function() {
 .STYLE3 {color: #F0F0F0}
 .header-text1 {
     font-size:18px;
-    position: absolute;
+    position: center;
     bottom: 0px;
     left: 0px;
     z-index: 1000;
@@ -66,90 +67,91 @@ $(function() {
     z-index: 10;
 	color:0,0,0,0;
 }
-.bg {
-       background:url(图片地址) no-repeat center;
-       background-size:contain;
-}
+
     </style>
 </head>
 
 <body style="background-color:#222">
-   <!--header start-->
-	<header class="header">
-		<div class="sidebar-toggle-box">
-			<div class="fa fa-bars tooltips" data-placement="right"></div>
-		</div>
-		<!--logo start-->
-		<a href="#" class="logo"><strong>北京大学软件与微电子学院</strong></a>
-		<!--logo end-->
-		
-		<div class="top-menu">
-            <ul class="nav pull-right top-menu">
-				<li><a class="social" href="/logout/">登出</a></li>
-			</ul>
-            <ul class="nav pull-right top-menu">
-                <li><h6>欢迎，{{ name }} &nbsp &nbsp</h6></li>
-			</ul>
-		</div>
-	</header>
-	<!--header end-->
-	<!--sidebar start-->
-	<aside>
-	<div class="sideNav" role="navigation" style="position:absolute; background-color:rgba(0,0,0,0); border-right:0px">
-		<div id="sidebar"  class="nav-collapse ">
-			<!-- sidebar menu start-->
-			<ul class="sidebar-menu" id="side-menu">
-				<li>
-                    <a href="#"><i class="fa fa-tags"></i>首页</a>
-                 </li>
-				 <li>
-                    <a href="#"><i class="fa fa-tags"></i>学生信息<span class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level">
-                        <li>
-                            <a href="#">平时成绩</a>
-                        </li>
-                        <li>
-                            <a href="/view_score/">期末考试预测</a>
-                        </li>
-						<li>
-							<a href="#">个性化评价</a>
-						</li>
-                    </ul>
-                 </li>
-                 <li>
-                    <a href="#"><i class="fa fa-tags"></i>更新信息<span class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level">
-                        <li>
-                            <a href="/update_detail/">修改学生信息</a>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#"><i class="fa fa-tags"></i>管理员权限<span class="fa arrow"></span></a>
-                    <ul class="nav nav-second-level">
-                        <li>
-                            <a href="/change_permission/">修改用户权限</a>
-                        </li>
-                        <li>
-                            <a href="/add_remove_user/">增加/删除用户</a>
-                        </li>
-						<li>
-							<a href="#">版本控制</a>
-						</li>
-                    </ul>
-                </li>
-			</ul>
-		  <!-- sidebar menu end-->
-		</div>
-		</div>
-	</aside>
-    <!--sidebar end-->
+    {% block headeraside %}
+           <!--header start-->
+        <header class="header">
+            <div class="sidebar-toggle-box">
+                <div class="fa fa-bars tooltips" data-placement="right"></div>
+            </div>
+            <!--logo start-->
+            <a href="#" class="logo"><strong>北京大学软件与微电子学院</strong></a>
+            <!--logo end-->
 
-	<!--main content start-->
-	<section id="main-content">
+            <div class="top-menu">
+                <ul class="nav pull-right top-menu">
+                    <li><a class="social" href="/logout/">登出</a></li>
+                </ul>
+                <ul class="nav pull-right top-menu">
+                    <li><h6>欢迎，{{ name }} &nbsp &nbsp</h6></li>
+                </ul>
+            </div>
+        </header>
+        <!--header end-->
+        <!--sidebar start-->
+        <aside>
+        <div class="sideNav" role="navigation" style="position:absolute; background-color:rgba(0,0,0,0); border-right:0px">
+            <div id="sidebar"  class="nav-collapse ">
+                <!-- sidebar menu start-->
+                <ul class="sidebar-menu" id="side-menu">
+                    <li>
+                        <a href="#"><i class="fa fa-tags"></i>首页</a>
+                     </li>
+                     <li>
+                        <a href="#"><i class="fa fa-tags"></i>学生信息<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="/view_detail/">平时成绩</a>
+                            </li>
+                            <li>
+                                <a href="/view_score/">期末考试预测</a>
+                            </li>
+                            <li>
+                                <a href="/view_evaluation/">个性化评价</a>
+                            </li>
+                        </ul>
+                     </li>
+                     <li>
+                        <a href="#"><i class="fa fa-tags"></i>更新信息<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="/update_detail/">修改学生信息</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-tags"></i>管理员权限<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="/change_permission/">修改用户权限</a>
+                            </li>
+                            <li>
+                                <a href="/add_remove_user/">增加/删除用户</a>
+                            </li>
+                            <li>
+                                <a href="#">版本控制</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+              <!-- sidebar menu end-->
+            </div>
+            </div>
+        </aside>
+        <!--sidebar end-->
+    {% endblock %}
+
+
+   {% block admin %}
+        <!--main content start-->
+	    <section id="main-content">
 		<section class="wrapper">
 			<!-- Carousel -->
-			
+
 			<div class="no-gutter">
 				<div class="col-lg-6">
 					<article class="box-shadow" style="height:500px">
@@ -210,8 +212,10 @@ $(function() {
 			</div>
 		</section><!-- /wrapper -->
 	</section><!-- /MAIN CONTENT -->
-	
-	<!--main content end-->
+	    <!--main content end-->
+   {% endblock %}
+
+
 	<!--footer start-->
 	<footer class="site-footer">
 	  <div class="text-center">

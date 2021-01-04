@@ -16,14 +16,16 @@
                                         <p class="header-text1">{{ obj.user_id.label }}   {{ obj.user_id }}
                                         <br>
                                         <input class="btn btn-lg btn-primary btn-block" name="submit" type="submit" value="提交">
+                                        <input class="btn btn-lg btn-primary btn-block" name="print" type="submit" value="打印">
                                     </form>
                                     <br>
                                     <br>
                                     <div>
-                                        学生 {{ student_id }} 的预测成绩：{{ score }}
+                                        学生 {{ student_id }} 的评价：{{ comment }}
                                     </div>
 								</div>
 							</div>
 						</div>
 					</article>
 {% endblock %}
+

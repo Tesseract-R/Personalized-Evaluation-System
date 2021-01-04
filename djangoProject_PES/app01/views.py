@@ -1,14 +1,12 @@
 import joblib
+from django.http import FileResponse
 from django.shortcuts import render, HttpResponse, redirect
 from app01 import models
-import pymysql
-
 from django import forms
 from django.forms import fields
 from django.forms import widgets
 
 from sklearn.preprocessing import MinMaxScaler
-import pymysql
 
 
 # Create your views here.
@@ -100,6 +98,29 @@ class SubmitForm(forms.Form):
         self.fields['user_id'].widget.choices=models.result_store.objects.values_list('userid','userid')
 
 
+class PredictForm(forms.Form):
+    inclass_score1 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    inclass_score2 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    inclass_score3 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    inclass_score4 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    inclass_score5 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    inclass_score6 = fields.FloatField(
+        max_value=200, min_value=0,
+    )
+    view_time = fields.FloatField(
+        max_value=1000, min_value=0,
+    )
+
 
 def adminindex(request, name):
     return render(request, 'adminindex.html', {'name': name})
@@ -174,7 +195,65 @@ def view_score(request):
         return render(request, 'view_score.html',
                           {"obj": obj, 'name': 'test',
                            'student_id': user_id, 'score': final_score})
-    return render(request, 'view_score.html', {'name': 'test','obj':RequestForm()})
+    return render(request, 'view_score.html', {'name': 'test', 'obj': RequestForm()})
+
+def view_detail(request):
+    if request.method == "POST":
+        obj = RequestForm(request.POST)
+        id = obj.data['user_id']
+        ret = models.result_store.objects.filter(id=id)
+        user_id = ret[0].userid
+        inclass_score1 = ret[0].inclass_score1
+        inclass_score2 = ret[0].inclass_score2
+        inclass_score3 = ret[0].inclass_score3
+        inclass_score4 = ret[0].inclass_score4
+        inclass_score5 = ret[0].inclass_score5
+        inclass_score6 = ret[0].inclass_score6
+        # view_time = ret[0].view_time
+        return render(request, 'view_detail.html',
+                          {"obj": obj, 'name': 'test',
+                           'student_id': user_id, 'inclass_score1': inclass_score1, 'inclass_score2': inclass_score2,
+                           'inclass_score3': inclass_score3, 'inclass_score4': inclass_score4,
+                           'inclass_score5': inclass_score5, 'inclass_score6': inclass_score6,})
+    return render(request, 'view_detail.html', {'name': 'test', 'obj': RequestForm()})
+
+def view_evaluation(request):
+    if request.method == "POST":
+        obj = RequestForm(request.POST)
+        id = obj.data['user_id']
+        ret = models.result_store.objects.filter(id=id)
+        user_id = ret[0].userid
+        comment = ret[0].comment
+        if 'print' in request.POST:
+            return some_view(request)
+        elif 'submit' in request.POST:
+            return render(request, 'view_evaluation.html',
+                      {"obj": obj, 'name': 'test',
+                       'student_id': user_id, 'comment': comment})
+    return render(request, 'view_evaluation.html', {'name': 'test', 'obj': RequestForm()})
+
+def some_view(request):
+    # Create a file-like buffer to receive PDF data.
+    import io
+    from django.http import FileResponse
+    from reportlab.pdfgen import canvas
+    buffer = io.BytesIO()
+
+    # Create the PDF object, using the buffer as its "file."
+    p = canvas.Canvas(buffer)
+
+    # Draw things on the PDF. Here's where the PDF generation happens.
+    # See the ReportLab documentation for the full list of functionality.
+    p.drawString(100, 100, "Hello world.")
+
+    # Close the PDF object cleanly, and we're done.
+    p.showPage()
+    p.save()
+
+    # FileResponse sets the Content-Disposition header so that browsers
+    # present the option to save the file.
+    buffer.seek(0)
+    return FileResponse(p, as_attachment=True, filename='hello.pdf')
 
 
 def add_remove_user(request):
@@ -256,7 +335,7 @@ def self_predict(request):
         svm_model = joblib.load(path)
 
         # 获取数据
-        obj = SubmitForm(request.POST)
+        obj = PredictForm(request.POST)
         data_list = []
         data_list.append(int(obj.data['inclass_score1']))
         data_list.append(int(obj.data['inclass_score2']))
@@ -272,7 +351,7 @@ def self_predict(request):
         result_score = svm_model.predict(data_normal)[0]
 
         return render(request, 'self_predict.html', {"obj": obj, 'name': 'test', 'msg': '你的成绩预测为：', 'result': round(result_score,2)})
-    obj = SubmitForm()
+    obj = PredictForm()
     return render(request, 'self_predict.html', {"obj": obj, 'name': 'test'},)
 
 def update_detail(request):
