@@ -1,6 +1,7 @@
 import os
 
 import joblib
+from django.core.exceptions import ValidationError
 from django.http import FileResponse
 from django.shortcuts import render, HttpResponse, redirect
 from app01 import models
@@ -52,7 +53,7 @@ class deleteForm(forms.Form):
 
     def __init__(self,*args,**kwargs):
         super(deleteForm,self).__init__(*args,**kwargs)
-        self.fields['user_id'].widget.choices=models.User.objects.values_list('userid','username')
+        self.fields['user_id'].widget.choices=models.User.objects.values_list('userid', 'username')
 
 class RequestForm(forms.Form):   # 这个是用于找所有学生信息的
     user_id = fields.CharField(
@@ -61,7 +62,7 @@ class RequestForm(forms.Form):   # 这个是用于找所有学生信息的
 
     def __init__(self,*args,**kwargs):
         super(RequestForm,self).__init__(*args,**kwargs)
-        self.fields['user_id'].widget.choices=models.result_store.objects.values_list('id','userid')
+        self.fields['user_id'].widget.choices=models.result_store.objects.values_list('id', 'userid')
 
 class SubmitForm(forms.Form):
     user_id = fields.CharField(
@@ -123,25 +124,44 @@ class PredictForm(forms.Form):
         max_value=1000, min_value=0,
     )
 
+class passwordForm(forms.Form):
+    original_password = fields.CharField(
+        required=True,
+        widget=forms.PasswordInput,
+    )
+    new_password = fields.CharField(
+        required=True,
+        widget=forms.PasswordInput,
+    )
+    confirm_password = fields.CharField(
+        required=True,
+        widget=forms.PasswordInput,
+    )
 
-def adminindex(request, name):
+
+
+
+def adminindex(request):
+    name = request.session.get('user_name')
     return render(request, 'adminindex.html', {'name': name})
 
 
-def teacherindex(request, name):
+def teacherindex(request):
+    name = request.session.get('user_name')
     return render(request, 'teacherindex.html', {'name': name})
 
 
-def studentindex(request, name):
-    if name == 'newStudent':
+def studentindex(request):
+    userid = request.session.get('user_id')
+    name = request.session.get('user_name')
+    usertype= request.session.get('user_type')
+    if  usertype == 'newStudent':
         return render(request, 'studentindex.html',
                       {'name': name, 'structure_design': 'null', 'software_process': 'null',
                        'detailed_design': 'null', 'demand_analysis': 'null',
                        'realization': 'null', 'maintenance': 'null', 'final_score': 'null'})
-        # return render(request,'predict_score.html',{'name':name})
-    ret_name = models.User.objects.filter(userid=name)
-    username = ret_name[0].username
-    ret = models.result_store.objects.filter(userid=name)
+
+    ret = models.result_store.objects.filter(userid=userid)
     structure_design = ret[0].inclass_score1
     software_process = ret[0].inclass_score2
     detailed_design = ret[0].inclass_score3
@@ -153,7 +173,7 @@ def studentindex(request, name):
     if len(comment) > 100:
         comment_show = comment[:100] + "......"
     return render(request, 'studentindex.html',
-                  {'name': username, 'structure_design': structure_design, 'software_process': software_process,
+                  {'name': name, 'structure_design': structure_design, 'software_process': software_process,
                    'detailed_design': detailed_design, 'demand_analysis': demand_analysis,
                    'realization': realization, 'maintenance': maintenance, 'final_score': final_score,
                    'comment': comment_show})
@@ -176,13 +196,13 @@ def index(request):
             request.session['user_name'] = ret[0].username
             request.session['user_type'] = ret[0].usertype
             if ret[0].usertype == 'ADMIN':  # 根据用户身份导向不同的页面
-                return adminindex(request, user)
+                return adminindex(request)
             elif ret[0].usertype == 'TEACHER' or ret[0].usertype == 'TA':
-                return teacherindex(request, user)
+                return teacherindex(request)
             elif ret[0].usertype == 'STUDENT':
-                return studentindex(request, user)
+                return studentindex(request)
             else:
-                return studentindex(request, 'newStudent')
+                return studentindex(request)
         else:
             error_msg = "登录失败，请检查用户名和密码！"
 
@@ -406,7 +426,7 @@ def update_detail(request):
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
-    html = 'view_detail.html'
+    html = 'update_detail.html'
     if request.session.get('user_type') == 'ADMIN':
         html = 'admin_' + html
 
@@ -479,4 +499,31 @@ def comment_detail(request):
     final_score = ret[0].final_score
     comment = ret[0].comment
     return FileResponse(comment)
-    return None
+
+### 修改密码模块 ###
+def update_password(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    # 获取最新version_id
+    userid = request.session.get('user_id')
+    name = request.session.get('user_name')
+    if request.method == "POST":
+        #检查原密码是否正确
+        obj = passwordForm(request.POST)
+        ret = models.User.objects.filter(userid=userid)
+        pwd = ret[0].password
+        if obj.data['original_password'] != pwd:
+            msg = '原密码输入错误'
+            return render(request, 'update_password.html', {"obj": obj, 'name': name, 'msg': msg})
+        # 检查两遍密码是否一致
+        if obj.data['new_password'] != obj.data['confirm_password']:
+            msg = '两次密码不一致'
+            return render(request, 'update_password.html', {"obj": obj, 'name': name, 'msg': msg})
+        # 修改
+        ret = models.User.objects.get(userid=userid)
+        ret.password = obj.data['new_password']
+        ret.save()
+        msg = '修改成功'
+        return render(request, 'update_password.html', {"obj": passwordForm(), 'name': name, 'msg': msg})
+    obj = passwordForm()
+    return render(request, 'update_password.html', {"obj": obj, 'name': name})
