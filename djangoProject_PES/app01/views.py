@@ -1,3 +1,5 @@
+import os
+
 import joblib
 from django.http import FileResponse
 from django.shortcuts import render, HttpResponse, redirect
@@ -148,11 +150,13 @@ def studentindex(request, name):
     maintenance = ret[0].inclass_score6
     final_score = ret[0].final_score
     comment = ret[0].comment
+    if len(comment) > 100:
+        comment_show = comment[:100] + "......"
     return render(request, 'studentindex.html',
                   {'name': username, 'structure_design': structure_design, 'software_process': software_process,
                    'detailed_design': detailed_design, 'demand_analysis': demand_analysis,
                    'realization': realization, 'maintenance': maintenance, 'final_score': final_score,
-                   'comment': comment})
+                   'comment': comment_show})
 
 
 def index(request):
@@ -167,6 +171,10 @@ def index(request):
 
         ret = models.User.objects.filter(userid=user, password=pwd)
         if ret:  # 登陆成功
+            request.session['is_login'] = True
+            request.session['user_id'] = ret[0].userid
+            request.session['user_name'] = ret[0].username
+            request.session['user_type'] = ret[0].usertype
             if ret[0].usertype == 'ADMIN':  # 根据用户身份导向不同的页面
                 return adminindex(request, user)
             elif ret[0].usertype == 'TEACHER' or ret[0].usertype == 'TA':
@@ -180,24 +188,46 @@ def index(request):
 
     return render(request, 'index.html', {"error": error_msg})
 
-
 def logout(request):
+    if not request.session.get('is_login', None):
+        # 如果本来就未登录，也就没有登出一说
+        return redirect("/index/")
+    request.session.flush()
+    # 或者使用下面的方法
+    # del request.session['is_login']
+    # del request.session['user_id']
+    # del request.session['user_name']
     return HttpResponse("登出成功！请关闭页面。")
 
 
 def view_score(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    name = request.session.get('user_name')
+    html = 'view_score.html'
+    if request.session.get('user_type') == 'ADMIN':
+        html = 'admin_' + html
+
     if request.method == "POST":
         obj = RequestForm(request.POST)
         id = obj.data['user_id']
         ret = models.result_store.objects.filter(id=id)
         user_id = ret[0].userid
         final_score = ret[0].final_score
-        return render(request, 'view_score.html',
-                          {"obj": obj, 'name': 'test',
+        return render(request, html,
+                          {"obj": obj, 'name': name,
                            'student_id': user_id, 'score': final_score})
-    return render(request, 'view_score.html', {'name': 'test', 'obj': RequestForm()})
+    return render(request, html, {'name': name, 'obj': RequestForm()})
+
 
 def view_detail(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    name = request.session.get('user_name')
+    html = 'view_detail.html'
+    if request.session.get('user_type') == 'ADMIN':
+        html = 'admin_' + html
+
     if request.method == "POST":
         obj = RequestForm(request.POST)
         id = obj.data['user_id']
@@ -210,53 +240,68 @@ def view_detail(request):
         inclass_score5 = ret[0].inclass_score5
         inclass_score6 = ret[0].inclass_score6
         # view_time = ret[0].view_time
-        return render(request, 'view_detail.html',
-                          {"obj": obj, 'name': 'test',
+        return render(request, html,
+                          {"obj": obj, 'name': name,
                            'student_id': user_id, 'inclass_score1': inclass_score1, 'inclass_score2': inclass_score2,
                            'inclass_score3': inclass_score3, 'inclass_score4': inclass_score4,
                            'inclass_score5': inclass_score5, 'inclass_score6': inclass_score6,})
-    return render(request, 'view_detail.html', {'name': 'test', 'obj': RequestForm()})
+    return render(request, html, {'name': name, 'obj': RequestForm()})
+
 
 def view_evaluation(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    name = request.session.get('user_name')
+    html = 'view_evaluation.html'
+    if request.session.get('user_type') == 'ADMIN':
+        html = 'admin_' + html
     if request.method == "POST":
         obj = RequestForm(request.POST)
         id = obj.data['user_id']
         ret = models.result_store.objects.filter(id=id)
         user_id = ret[0].userid
         comment = ret[0].comment
-        if 'print' in request.POST:
-            return some_view(request)
-        elif 'submit' in request.POST:
-            return render(request, 'view_evaluation.html',
-                      {"obj": obj, 'name': 'test',
-                       'student_id': user_id, 'comment': comment})
-    return render(request, 'view_evaluation.html', {'name': 'test', 'obj': RequestForm()})
+        generatePDF(comment)
+        return render(request, html,
+                      {"obj": obj, 'name': name,
+                       'student_id': user_id, 'comment': comment, 'button':'下载'})
+    return render(request, html, {'name': name, 'obj': RequestForm()})
 
-def some_view(request):
-    # Create a file-like buffer to receive PDF data.
-    import io
-    from django.http import FileResponse
-    from reportlab.pdfgen import canvas
-    buffer = io.BytesIO()
 
-    # Create the PDF object, using the buffer as its "file."
-    p = canvas.Canvas(buffer)
+def generatePDF(comment):
+    from reportlab.pdfbase.ttfonts import TTFont
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.enums import TA_LEFT
+    from reportlab.platypus import SimpleDocTemplate, Paragraph
 
-    # Draw things on the PDF. Here's where the PDF generation happens.
-    # See the ReportLab documentation for the full list of functionality.
-    p.drawString(100, 100, "Hello world.")
+    str1 = comment
+    pdfmetrics.registerFont(TTFont('fs', 'simfang.ttf'))  # 注册字体
+    mystyle = ParagraphStyle(name="user_style", fontName="fs", alignment=TA_LEFT, )
+    pdf = SimpleDocTemplate('comment.pdf')
+    contents = []
+    for i in str1.split('\n'):
+        contents.append(Paragraph(i, style=mystyle))
+    pdf.build(contents)
 
-    # Close the PDF object cleanly, and we're done.
-    p.showPage()
-    p.save()
 
-    # FileResponse sets the Content-Disposition header so that browsers
-    # present the option to save the file.
-    buffer.seek(0)
-    return FileResponse(p, as_attachment=True, filename='hello.pdf')
+def download(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    name = request.session.get('user_name')
+    if os.path.exists('comment.pdf'):
+        file = open('comment.pdf', 'rb')
+        response = FileResponse(file)
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = 'attachment;filename="comment.pdf"'
+        return response
+    return render(request, 'view_evaluation.html', {'name': name, 'obj': RequestForm()})
 
 
 def add_remove_user(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    name = request.session.get('user_name')
     if request.method == "POST":
         if 'add' in request.POST:
             obj_add = addForm(request.POST)
@@ -264,7 +309,7 @@ def add_remove_user(request):
             if models.User.objects.filter(userid=user_id):
                 msg = "用户的学号已经存在！"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': 'admin', 'user_id_add': user_id, 'msg_add': msg})
+                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': name, 'user_id_add': user_id, 'msg_add': msg})
             else:
                 user_name = obj_add.data['user_name']
                 user_type = obj_add.data['user_type']
@@ -275,18 +320,18 @@ def add_remove_user(request):
                                                    comment='default')
                 msg = "创建成功"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': 'admin', 'user_id_add': user_id, 'msg_add': msg, 'user_type': user_type})
+                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': name, 'user_id_add': user_id, 'msg_add': msg, 'user_type': user_type})
         if 'delete' in request.POST:
             obj_delete = deleteForm(request.POST)
             user_id = obj_delete.data['user_id']
             if user_id == 'admin':
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': 'admin',
+                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': name,
                                'student_id': user_id, 'msg_delete': "不允许删除超级管理员"})
             if not models.User.objects.filter(userid=user_id):
                 msg = "待删除用户不存在！"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': 'admin',
+                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': name,
                                'student_id': user_id, 'msg_delete': msg})
             else:
                 q1 = models.User.objects.filter(userid=user_id).last()
@@ -296,22 +341,25 @@ def add_remove_user(request):
                     q2.delete()
                 msg = "删除成功"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': 'admin',
+                              {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': name,
                                'student_id': user_id, 'msg_delete': msg})
-    return render(request, 'add_remove_user.html', {"obj_add": addForm(),"obj_delete": deleteForm(), 'name': 'admin'})
+    return render(request, 'add_remove_user.html', {"obj_add": addForm(),"obj_delete": deleteForm(), 'name': name})
 
 
 def change_permission(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    name = request.session.get('user_name')
     if request.method == "POST":
         obj = deleteForm(request.POST)
         user_id = obj.data['user_id']
         if user_id == 'admin':
             return render(request, 'change_permission.html',
-                          {"obj": obj, 'name': 'admin', 'msg': "不允许修改超级管理员权限！"})
+                          {"obj": obj, 'name': name, 'msg': "不允许修改超级管理员权限！"})
         if not models.User.objects.filter(userid=user_id):
             msg = "用户不存在！"
             return render(request, 'change_permission.html',
-                          {"obj": obj, 'name': 'admin', 'user_id': user_id, 'msg': msg})
+                          {"obj": obj, 'name': name, 'user_id': user_id, 'msg': msg})
         else:
             ret = models.User.objects.filter(userid=user_id)
             type_before = ret[0].usertype
@@ -321,10 +369,10 @@ def change_permission(request):
             ret.save()
             msg = "修改权限成功"
             return render(request, 'change_permission.html',
-                          {"obj": obj, 'name': 'admin', 'user_id': user_id, 'msg': msg,
+                          {"obj": obj, 'name': name, 'user_id': user_id, 'msg': msg,
                            'type_before': type_before, 'type_after': type_after})
     obj = deleteForm()
-    return render(request, 'change_permission.html', {"obj": obj, 'name': 'admin'})
+    return render(request, 'change_permission.html', {"obj": obj, 'name': name})
 
 
 def self_predict(request):
@@ -355,6 +403,13 @@ def self_predict(request):
     return render(request, 'self_predict.html', {"obj": obj, 'name': 'test'},)
 
 def update_detail(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    name = request.session.get('user_name')
+    html = 'view_detail.html'
+    if request.session.get('user_type') == 'ADMIN':
+        html = 'admin_' + html
+
     if request.method == "POST":
         obj = SubmitForm(request.POST)
         user_id = obj.data['user_id']
@@ -384,8 +439,44 @@ def update_detail(request):
                     ret.inclass_score6 = dict.get(i)
         ret.save()
         msg = "修改成功"
-
-        return render(request, 'update_detail.html',
+        return render(request, html,
                       {"obj": obj, 'name': 'admin', 'user_id': user_id, 'msg': msg})
     obj = SubmitForm()
-    return render(request, 'update_detail.html', {"obj": obj, 'name': 'admin'})
+    return render(request, html, {"obj": obj, 'name': name})
+
+
+def update_system(request):
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    # 获取最新version_id
+    name = request.session.get('user_name')
+    import os
+    import time
+    path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib_231328'
+    mtime = os.stat(path).st_mtime
+    file_modify_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mtime))
+
+    if request.method == "POST":
+        #
+        # 调用svm接口
+        #
+        msg = "更新成功"
+        time_now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        return render(request, 'update_system.html',
+                      {'version_id':time_now, 'msg': msg, 'name':'admin'})
+    return render(request, 'update_system.html',{'version_id':file_modify_time,'name':name})
+
+
+def comment_detail(request):
+    userid = request.session.get('user_id')
+    ret = models.result_store.objects.filter(userid=userid)
+    structure_design = ret[0].inclass_score1
+    software_process = ret[0].inclass_score2
+    detailed_design = ret[0].inclass_score3
+    demand_analysis = ret[0].inclass_score4
+    realization = ret[0].inclass_score5
+    maintenance = ret[0].inclass_score6
+    final_score = ret[0].final_score
+    comment = ret[0].comment
+    return FileResponse(comment)
+    return None

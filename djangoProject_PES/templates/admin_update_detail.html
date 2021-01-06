@@ -1,0 +1,36 @@
+{% extends 'admin_view_detail.html' %}
+
+{% block main %}
+    <article class="box-shadow" style="height:1200px">
+        <div class="no-gutter">
+            <div class="col-sm-12">
+                <div class="art-content text-center">
+                    <div class="heading">
+                        <br>
+                        <br>
+                        <h2>修改用户权限</h2>
+                        <hr class="line">
+                    </div>
+                    <form class="form-submit" action="" method="post">
+                        <br>
+                        <p class="header-text1">{{ obj.user_id.label }}   {{ obj.user_id }}
+                        结构化{{ obj.inclass_score1 }}
+                        软件过程{{ obj.inclass_score2 }}
+                        详细设计{{ obj.inclass_score3 }}
+                        需求分析{{ obj.inclass_score4 }}
+                        实现测试{{ obj.inclass_score5 }}
+                        维护{{ obj.inclass_score6 }}
+                        在线观看时长{{ obj.view_time }}
+                        <br>
+                        <input class="btn btn-lg btn-primary btn-block" name="add" type="submit" value="修改">
+                    </form>
+                    <br>
+                    <br>
+                    <div>
+                        {{ msg }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+{% endblock %}

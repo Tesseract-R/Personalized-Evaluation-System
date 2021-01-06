@@ -1,4 +1,4 @@
-{% extends 'view_detail.html' %}
+{% extends 'admin_view_detail.html' %}
 
 {% block main %}
     <article class="box-shadow" style="height:870px">
@@ -20,12 +20,10 @@
                                     <br>
                                     <br>
                                     <div>
-                                        学生 {{ student_id }} 的评价：{{ comment }}
+                                        学生 {{ student_id }} 的预测成绩：{{ score }}
                                     </div>
-                                    <a href="/download/">{{ button }}</a>
 								</div>
 							</div>
 						</div>
 					</article>
 {% endblock %}
-

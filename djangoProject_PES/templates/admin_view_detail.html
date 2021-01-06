@@ -1,0 +1,49 @@
+{% extends 'adminindex.html' %}
+
+{% block admin %}
+    <!--main content start-->
+	<section id="main-content">
+		<section class="wrapper">
+			<!-- Carousel -->
+			<div class="no-gutter">
+				<div class="col-lg-12">
+                    {% block main %}
+                        <article class="box-shadow" style="height:870px">
+						<div class="no-gutter">
+							<div class="col-sm-12">
+								<div class="art-content text-center">
+									<div class="heading">
+                                        <br>
+                                        <br>
+										<h2>查询学生平时成绩</h2>
+										<hr class="line">
+									</div>
+                                    <form class="form-submit" action="" method="post" novalidate>
+                                        <br>
+                                        <p class="header-text1">{{ obj.user_id.label }}   {{ obj.user_id }}
+                                        <br>
+                                        <input class="btn btn-lg btn-primary btn-block" name="submit" type="submit" value="提交">
+                                    </form>
+                                    <br>
+                                    <br>
+                                    <div>
+                                        学生 {{ student_id }}<br>
+                                        结构化 {{ inclass_score1 }}<br>
+                                        软件过程 {{ inclass_score2 }}<br>
+                                        详细设计 {{ inclass_score3 }}<br>
+                                        需求分析 {{ inclass_score4 }}<br>
+                                        实现测试 {{ inclass_score5 }}<br>
+                                        维护 {{ inclass_score6 }}<br>
+                                        在线观看时长 {{ view_time }}<br>
+                                    </div>
+								</div>
+							</div>
+						</div>
+					</article>
+                    {% endblock %}
+				</div>
+			</div>
+		</section><!-- /wrapper -->
+	</section><!-- /MAIN CONTENT -->
+	<!--main content end-->
+{% endblock %}
