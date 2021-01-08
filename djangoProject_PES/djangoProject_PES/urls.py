@@ -30,12 +30,12 @@ urlpatterns = [
     path(r'view_detail/', views.view_detail),
     path(r'view_evaluation/', views.view_evaluation),
     path(r'add_remove_user/', views.add_remove_user),
-    path(r'change_permission/', views.change_permission),
+    path(r'update_permission/', views.update_permission),
     path(r'self_predict/',views.self_predict),
     path(r'update_detail/',views.update_detail),
     path(r'download/',views.download),
     path(r'update_system/',views.update_system),
     path(r'comment_detail/',views.comment_detail),
-    path(r'update_password/',views.update_password)
+    path(r'update_password/',views.update_password),
 
 ]

@@ -366,7 +366,7 @@ def add_remove_user(request):
     return render(request, 'add_remove_user.html', {"obj_add": addForm(),"obj_delete": deleteForm(), 'name': name})
 
 
-def change_permission(request):
+def update_permission(request):
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
@@ -374,11 +374,11 @@ def change_permission(request):
         obj = deleteForm(request.POST)
         user_id = obj.data['user_id']
         if user_id == 'admin':
-            return render(request, 'change_permission.html',
+            return render(request, 'update_permission.html',
                           {"obj": obj, 'name': name, 'msg': "不允许修改超级管理员权限！"})
         if not models.User.objects.filter(userid=user_id):
             msg = "用户不存在！"
-            return render(request, 'change_permission.html',
+            return render(request, 'update_permission.html',
                           {"obj": obj, 'name': name, 'user_id': user_id, 'msg': msg})
         else:
             ret = models.User.objects.filter(userid=user_id)
@@ -388,11 +388,11 @@ def change_permission(request):
             ret.usertype = type_after
             ret.save()
             msg = "修改权限成功"
-            return render(request, 'change_permission.html',
+            return render(request, 'update_permission.html',
                           {"obj": obj, 'name': name, 'user_id': user_id, 'msg': msg,
                            'type_before': type_before, 'type_after': type_after})
     obj = deleteForm()
-    return render(request, 'change_permission.html', {"obj": obj, 'name': name})
+    return render(request, 'update_permission.html', {"obj": obj, 'name': name})
 
 
 def self_predict(request):
