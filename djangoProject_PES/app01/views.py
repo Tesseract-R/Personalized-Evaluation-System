@@ -15,6 +15,7 @@ from sklearn.preprocessing import MinMaxScaler
 # Create your views here.
 
 class addForm(forms.Form):
+    # 增加用户表单
     user_id = fields.CharField(
         label='学号/编号',
         required=True,
@@ -35,7 +36,9 @@ class addForm(forms.Form):
         initial='STUDENT'
     )
 
+
 class deleteForm(forms.Form):
+    # 删除用户表单
     user_id = fields.CharField(
         label='用户名',
         widget=widgets.Select())
@@ -51,20 +54,24 @@ class deleteForm(forms.Form):
         widget=forms.widgets.CheckboxInput()
     )
 
-    def __init__(self,*args,**kwargs):
-        super(deleteForm,self).__init__(*args,**kwargs)
-        self.fields['user_id'].widget.choices=models.User.objects.values_list('userid', 'username')
+    def __init__(self, *args, **kwargs):
+        super(deleteForm, self).__init__(*args, **kwargs)
+        self.fields['user_id'].widget.choices = models.User.objects.values_list('userid', 'username')
 
-class RequestForm(forms.Form):   # 这个是用于找所有学生信息的
+
+class RequestForm(forms.Form):
+    # 用于查询学生信息的表单
     user_id = fields.CharField(
         label='学生学号',
         widget=widgets.Select())
 
-    def __init__(self,*args,**kwargs):
-        super(RequestForm,self).__init__(*args,**kwargs)
-        self.fields['user_id'].widget.choices=models.result_store.objects.values_list('id', 'userid')
+    def __init__(self, *args, **kwargs):
+        super(RequestForm, self).__init__(*args, **kwargs)
+        self.fields['user_id'].widget.choices = models.result_store.objects.values_list('id', 'userid')
+
 
 class SubmitForm(forms.Form):
+    # 修改学生信息的表单
     user_id = fields.CharField(
         label='用户名',
         widget=widgets.Select())
@@ -96,12 +103,14 @@ class SubmitForm(forms.Form):
         max_value=1000, min_value=0,
         required=False,
     )
-    def __init__(self,*args,**kwargs):
-        super(SubmitForm,self).__init__(*args,**kwargs)
-        self.fields['user_id'].widget.choices=models.result_store.objects.values_list('userid','userid')
+
+    def __init__(self, *args, **kwargs):
+        super(SubmitForm, self).__init__(*args, **kwargs)
+        self.fields['user_id'].widget.choices = models.result_store.objects.values_list('userid', 'userid')
 
 
 class PredictForm(forms.Form):
+    # 自助预测成绩的表单
     inclass_score1 = fields.FloatField(
         max_value=200, min_value=0,
     )
@@ -124,7 +133,9 @@ class PredictForm(forms.Form):
         max_value=1000, min_value=0,
     )
 
+
 class passwordForm(forms.Form):
+    # 修改密码的表单
     original_password = fields.CharField(
         required=True,
         widget=forms.PasswordInput,
@@ -139,23 +150,36 @@ class passwordForm(forms.Form):
     )
 
 
-
-
 def adminindex(request):
+    """
+    导向管理员主页
+    :param request:
+    :return:
+    """
     name = request.session.get('user_name')
     return render(request, 'adminindex.html', {'name': name})
 
 
 def teacherindex(request):
+    """
+    导向教师主页
+    :param request:
+    :return:
+    """
     name = request.session.get('user_name')
     return render(request, 'teacherindex.html', {'name': name})
 
 
 def studentindex(request):
+    """
+    导向学生主页
+    :param request:
+    :return:
+    """
     userid = request.session.get('user_id')
     name = request.session.get('user_name')
-    usertype= request.session.get('user_type')
-    if  usertype == 'newStudent':
+    usertype = request.session.get('user_type')
+    if usertype == 'newStudent':
         return render(request, 'studentindex.html',
                       {'name': name, 'structure_design': 'null', 'software_process': 'null',
                        'detailed_design': 'null', 'demand_analysis': 'null',
@@ -180,7 +204,12 @@ def studentindex(request):
 
 
 def index(request):
-    # 返回结果
+    """
+    登录界面，在user的表中查询是否有匹配的用户名和密码，验证通过后根据角色不同导向
+    adminindex、studentindex和teacherindex三个页面
+    :param request:
+    :return:
+    """
     error_msg = ""
     if request.method == "POST":
         user = request.POST['username']
@@ -208,19 +237,26 @@ def index(request):
 
     return render(request, 'index.html', {"error": error_msg})
 
+
 def logout(request):
+    """
+    登出
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         # 如果本来就未登录，也就没有登出一说
         return redirect("/index/")
     request.session.flush()
-    # 或者使用下面的方法
-    # del request.session['is_login']
-    # del request.session['user_id']
-    # del request.session['user_name']
     return HttpResponse("登出成功！请关闭页面。")
 
 
 def view_score(request):
+    """
+    在数据库中查询学生预测的成绩
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
@@ -235,12 +271,17 @@ def view_score(request):
         user_id = ret[0].userid
         final_score = ret[0].final_score
         return render(request, html,
-                          {"obj": obj, 'name': name,
-                           'student_id': user_id, 'score': final_score})
+                      {"obj": obj, 'name': name,
+                       'student_id': user_id, 'score': final_score})
     return render(request, html, {'name': name, 'obj': RequestForm()})
 
 
 def view_detail(request):
+    """
+    在数据库中查询学生平时成绩
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
@@ -261,14 +302,19 @@ def view_detail(request):
         inclass_score6 = ret[0].inclass_score6
         # view_time = ret[0].view_time
         return render(request, html,
-                          {"obj": obj, 'name': name,
-                           'student_id': user_id, 'inclass_score1': inclass_score1, 'inclass_score2': inclass_score2,
-                           'inclass_score3': inclass_score3, 'inclass_score4': inclass_score4,
-                           'inclass_score5': inclass_score5, 'inclass_score6': inclass_score6,})
+                      {"obj": obj, 'name': name,
+                       'student_id': user_id, 'inclass_score1': inclass_score1, 'inclass_score2': inclass_score2,
+                       'inclass_score3': inclass_score3, 'inclass_score4': inclass_score4,
+                       'inclass_score5': inclass_score5, 'inclass_score6': inclass_score6, })
     return render(request, html, {'name': name, 'obj': RequestForm()})
 
 
 def view_evaluation(request):
+    """
+    在数据库中查询学生的个性化评价
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
@@ -284,11 +330,16 @@ def view_evaluation(request):
         generatePDF(comment)
         return render(request, html,
                       {"obj": obj, 'name': name,
-                       'student_id': user_id, 'comment': comment, 'button':'下载'})
+                       'student_id': user_id, 'comment': comment, 'button': '下载'})
     return render(request, html, {'name': name, 'obj': RequestForm()})
 
 
 def generatePDF(comment):
+    """
+    根据内容生成一个PDF文件
+    :param comment:
+    :return:
+    """
     from reportlab.pdfbase.ttfonts import TTFont
     from reportlab.pdfbase import pdfmetrics
     from reportlab.lib.styles import ParagraphStyle
@@ -306,6 +357,11 @@ def generatePDF(comment):
 
 
 def download(request):
+    """
+    下载（目前没办法应对并发的下载请求）
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
@@ -319,6 +375,11 @@ def download(request):
 
 
 def add_remove_user(request):
+    """
+    增加或删除用户，根据POST中按钮的名称判断提交的请求
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
@@ -329,18 +390,22 @@ def add_remove_user(request):
             if models.User.objects.filter(userid=user_id):
                 msg = "用户的学号已经存在！"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': name, 'user_id_add': user_id, 'msg_add': msg})
+                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': name, 'user_id_add': user_id,
+                               'msg_add': msg})
             else:
                 user_name = obj_add.data['user_name']
                 user_type = obj_add.data['user_type']
                 models.User.objects.create(userid=user_id, username=user_name, password="123456", usertype=user_type)
                 if user_type == 'STUDENT':
-                    models.result_store.objects.create(userid=user_id, inclass_score1=0, inclass_score2=0, inclass_score3=0,
-                                                   inclass_score4=0, inclass_score5=0, inclass_score6=0, final_score=0,
-                                                   comment='default')
+                    models.result_store.objects.create(userid=user_id, inclass_score1=0, inclass_score2=0,
+                                                       inclass_score3=0,
+                                                       inclass_score4=0, inclass_score5=0, inclass_score6=0,
+                                                       final_score=0,
+                                                       comment='default')
                 msg = "创建成功"
                 return render(request, 'add_remove_user.html',
-                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': name, 'user_id_add': user_id, 'msg_add': msg, 'user_type': user_type})
+                              {"obj_add": obj_add, "obj_delete": deleteForm(), 'name': name, 'user_id_add': user_id,
+                               'msg_add': msg, 'user_type': user_type})
         if 'delete' in request.POST:
             obj_delete = deleteForm(request.POST)
             user_id = obj_delete.data['user_id']
@@ -363,10 +428,16 @@ def add_remove_user(request):
                 return render(request, 'add_remove_user.html',
                               {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': name,
                                'student_id': user_id, 'msg_delete': msg})
-    return render(request, 'add_remove_user.html', {"obj_add": addForm(),"obj_delete": deleteForm(), 'name': name})
+    return render(request, 'add_remove_user.html', {"obj_add": addForm(), "obj_delete": deleteForm(), 'name': name})
 
 
 def update_permission(request):
+    """
+    修改用户的权限
+    （漏洞：最好验证访问该页面的是管理员）
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
@@ -396,9 +467,14 @@ def update_permission(request):
 
 
 def self_predict(request):
+    """
+    学生填写成绩表单，然后调用svm模型得到预测的成绩
+    :param request:
+    :return:
+    """
     if request.method == "POST":
         # 读取模型
-            # 之后更新SVM模型后也需要更改路径
+        # 之后更新SVM模型后也需要更改路径
         path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib_231328'
         svm_model = joblib.load(path)
 
@@ -418,11 +494,18 @@ def self_predict(request):
         # 预测
         result_score = svm_model.predict(data_normal)[0]
 
-        return render(request, 'self_predict.html', {"obj": obj, 'name': 'test', 'msg': '你的成绩预测为：', 'result': round(result_score,2)})
+        return render(request, 'self_predict.html',
+                      {"obj": obj, 'name': 'test', 'msg': '你的成绩预测为：', 'result': round(result_score, 2)})
     obj = PredictForm()
-    return render(request, 'self_predict.html', {"obj": obj, 'name': 'test'},)
+    return render(request, 'self_predict.html', {"obj": obj, 'name': 'test'}, )
+
 
 def update_detail(request):
+    """
+    修改学生信息
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     name = request.session.get('user_name')
@@ -466,6 +549,11 @@ def update_detail(request):
 
 
 def update_system(request):
+    """
+    版本更新
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     # 获取最新version_id
@@ -478,16 +566,22 @@ def update_system(request):
 
     if request.method == "POST":
         #
-        # 调用svm接口
+        # 调用svm提供的接口，生成新的模型
+        # 调用评价模块的接口，更新学生的评价
         #
         msg = "更新成功"
         time_now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
         return render(request, 'update_system.html',
-                      {'version_id':time_now, 'msg': msg, 'name':'admin'})
-    return render(request, 'update_system.html',{'version_id':file_modify_time,'name':name})
+                      {'version_id': time_now, 'msg': msg, 'name': 'admin'})
+    return render(request, 'update_system.html', {'version_id': file_modify_time, 'name': name})
 
 
 def comment_detail(request):
+    """
+    学生查看评价的详细内容
+    :param request:
+    :return:
+    """
     userid = request.session.get('user_id')
     ret = models.result_store.objects.filter(userid=userid)
     structure_design = ret[0].inclass_score1
@@ -500,15 +594,22 @@ def comment_detail(request):
     comment = ret[0].comment
     return FileResponse(comment)
 
+
 ### 修改密码模块 ###
 def update_password(request):
+    """
+    修改密码
+    需要输入原密码，输入两遍新密码
+    :param request:
+    :return:
+    """
     if not request.session.get('is_login', None):
         return redirect("/index/")
     # 获取最新version_id
     userid = request.session.get('user_id')
     name = request.session.get('user_name')
     if request.method == "POST":
-        #检查原密码是否正确
+        # 检查原密码是否正确
         obj = passwordForm(request.POST)
         ret = models.User.objects.filter(userid=userid)
         pwd = ret[0].password
