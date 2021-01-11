@@ -24,3 +24,24 @@
 ### 第二次线下会议记录（11/18）：[链接](https://github.com/Tesseract-R/Personalized-Evaluation-System/blob/main/%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95/11%E6%9C%8818%E6%97%A5%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95.md)
 
 ### 第三次线下会议记录（12/2）：[链接](https://github.com/Tesseract-R/Personalized-Evaluation-System/blob/main/%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95/12%E6%9C%882%E6%97%A5%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95.png)
+
+% 语法示例
+        gantt
+        dateFormat  YYYY-MM-DD
+        title 系统开发甘特图
+        section 设计
+        可行性研究	:done,    des1, 2020-10-18,2020-10-29
+        需求分析     :done,    des2, 2020-11-02,2020-11-12
+        概要设计     :done,    des3, 2020-11-17, 2020-11-25
+        详细设计     :done,    des4, 2020-11-30, 2020-12-08
+
+        section 编码
+		成绩预测模块       :crit, done, 2020-12-02,2021-01-13
+		个性化评价生成模块  :crit, done, 2020-12-02,2021-01-13
+        web框架           :crit, done, 2020-12-02,2021-01-13
+        模块集成           :crit, done, 2021-01-11,2021-01-15
+
+        section 测试
+        功能测试           :done,   a1, 2021-01-10, 3d
+        压力测试           :active， 2021-01-12, 3d
+        测试报告           :done,2021-01-12,1d
