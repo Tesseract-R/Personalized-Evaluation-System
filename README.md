@@ -25,6 +25,7 @@
 
 ### 第三次线下会议记录（12/2）：[链接](https://github.com/Tesseract-R/Personalized-Evaluation-System/blob/main/%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95/12%E6%9C%882%E6%97%A5%E4%BC%9A%E8%AE%AE%E8%AE%B0%E5%BD%95.png)
 
+```
 gantt
 dateFormat  YYYY-MM-DD
 title 系统开发甘特图
@@ -44,3 +45,4 @@ section 测试
 功能测试           :done,   a1, 2021-01-10, 3d
 压力测试           :active， 2021-01-12, 3d
 测试报告           :done,2021-01-12,1d
+```
