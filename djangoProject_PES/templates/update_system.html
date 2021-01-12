@@ -19,10 +19,12 @@
 										<hr class="line">
 									</div>
                                     <p align="left" class="header-text1">我的编号：{{ name }}</p>
-                                    <p class="header-text1">目前版本： {{ version_id }}
+                                    <p class="header-text1">目前系统版本： {{ version_id }}
                                     <br>
                                     <form class="form-submit" action="" method="post">
-                                        <input class="btn btn-lg btn-primary btn-block" name="update" type="submit" value="更新">
+                                        <input class="btn btn-lg btn-primary btn-block" name="model" type="submit" value="更新预测模型">
+                                        <input class="btn btn-lg btn-primary btn-block" name="predict_score" type="submit" value="更新预测分数">
+                                        <input class="btn btn-lg btn-primary btn-block" name="evaluation" type="submit" value="更新学生评价">
                                     </form>
                                     <div>
                                         {{ msg }}

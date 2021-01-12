@@ -1,10 +1,9 @@
 import os
-
 import joblib
 from django.core.exceptions import ValidationError
 from django.http import FileResponse
 from django.shortcuts import render, HttpResponse, redirect
-from app01 import models
+from app01 import models, grade_predict
 from django import forms
 from django.forms import fields
 from django.forms import widgets
@@ -75,6 +74,10 @@ class SubmitForm(forms.Form):
     user_id = fields.CharField(
         label='用户名',
         widget=widgets.Select())
+    start_score = fields.FloatField(
+        max_value=200, min_value=0,
+        required=False,
+    )
     inclass_score1 = fields.FloatField(
         max_value=200, min_value=0,
         required=False,
@@ -111,6 +114,9 @@ class SubmitForm(forms.Form):
 
 class PredictForm(forms.Form):
     # 自助预测成绩的表单
+    start_score = fields.FloatField(
+        max_value=200, min_value=0,
+    )
     inclass_score1 = fields.FloatField(
         max_value=200, min_value=0,
     )
@@ -178,14 +184,9 @@ def studentindex(request):
     """
     userid = request.session.get('user_id')
     name = request.session.get('user_name')
-    usertype = request.session.get('user_type')
-    if usertype == 'newStudent':
-        return render(request, 'studentindex.html',
-                      {'name': name, 'structure_design': 'null', 'software_process': 'null',
-                       'detailed_design': 'null', 'demand_analysis': 'null',
-                       'realization': 'null', 'maintenance': 'null', 'final_score': 'null'})
 
     ret = models.result_store.objects.filter(userid=userid)
+    start_score = ret[0].start_score
     structure_design = ret[0].inclass_score1
     software_process = ret[0].inclass_score2
     detailed_design = ret[0].inclass_score3
@@ -195,12 +196,12 @@ def studentindex(request):
     final_score = ret[0].final_score
     comment = ret[0].comment
     if len(comment) > 100:
-        comment_show = comment[:100] + "......"
+        comment = comment[:100] + "......"
     return render(request, 'studentindex.html',
-                  {'name': name, 'structure_design': structure_design, 'software_process': software_process,
+                  {'name': name, 'start_score':start_score,'structure_design': structure_design, 'software_process': software_process,
                    'detailed_design': detailed_design, 'demand_analysis': demand_analysis,
                    'realization': realization, 'maintenance': maintenance, 'final_score': final_score,
-                   'comment': comment_show})
+                   'comment': comment})
 
 
 def index(request):
@@ -294,18 +295,19 @@ def view_detail(request):
         id = obj.data['user_id']
         ret = models.result_store.objects.filter(id=id)
         user_id = ret[0].userid
+        start_score = ret[0].start_score
         inclass_score1 = ret[0].inclass_score1
         inclass_score2 = ret[0].inclass_score2
         inclass_score3 = ret[0].inclass_score3
         inclass_score4 = ret[0].inclass_score4
         inclass_score5 = ret[0].inclass_score5
         inclass_score6 = ret[0].inclass_score6
-        # view_time = ret[0].view_time
+        view_time = ret[0].view_time
         return render(request, html,
                       {"obj": obj, 'name': name,
-                       'student_id': user_id, 'inclass_score1': inclass_score1, 'inclass_score2': inclass_score2,
+                       'student_id': user_id, 'start_score':start_score, 'inclass_score1': inclass_score1, 'inclass_score2': inclass_score2,
                        'inclass_score3': inclass_score3, 'inclass_score4': inclass_score4,
-                       'inclass_score5': inclass_score5, 'inclass_score6': inclass_score6, })
+                       'inclass_score5': inclass_score5, 'inclass_score6': inclass_score6, 'view_time':view_time})
     return render(request, html, {'name': name, 'obj': RequestForm()})
 
 
@@ -397,10 +399,10 @@ def add_remove_user(request):
                 user_type = obj_add.data['user_type']
                 models.User.objects.create(userid=user_id, username=user_name, password="123456", usertype=user_type)
                 if user_type == 'STUDENT':
-                    models.result_store.objects.create(userid=user_id, inclass_score1=0, inclass_score2=0,
+                    models.result_store.objects.create(userid=user_id, start_score=0,inclass_score1=0, inclass_score2=0,
                                                        inclass_score3=0,
                                                        inclass_score4=0, inclass_score5=0, inclass_score6=0,
-                                                       final_score=0,
+                                                       final_score=0,view_time=0,
                                                        comment='default')
                 msg = "创建成功"
                 return render(request, 'add_remove_user.html',
@@ -475,12 +477,13 @@ def self_predict(request):
     if request.method == "POST":
         # 读取模型
         # 之后更新SVM模型后也需要更改路径
-        path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib_231328'
+        path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib'
         svm_model = joblib.load(path)
 
         # 获取数据
         obj = PredictForm(request.POST)
         data_list = []
+        data_list.append(int(obj.data['start_score']))
         data_list.append(int(obj.data['inclass_score1']))
         data_list.append(int(obj.data['inclass_score2']))
         data_list.append(int(obj.data['inclass_score3']))
@@ -489,8 +492,9 @@ def self_predict(request):
         data_list.append(int(obj.data['inclass_score6']))
         data_list.append(int(obj.data['view_time']))
         # 归一化
-        mm = MinMaxScaler()
-        data_normal = mm.fit_transform([data_list])
+        path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\mm'
+        mm = joblib.load(path)
+        data_normal = mm.transform([data_list])
         # 预测
         result_score = svm_model.predict(data_normal)[0]
 
@@ -519,6 +523,7 @@ def update_detail(request):
 
         ret = models.result_store.objects.get(userid=user_id)
         dict = {}
+        dict['start_score'] = obj.data['start_score']
         dict['inclass_score1'] = obj.data['inclass_score1']
         dict['inclass_score2'] = obj.data['inclass_score2']
         dict['inclass_score3'] = obj.data['inclass_score3']
@@ -528,6 +533,8 @@ def update_detail(request):
         dict['view_time'] = obj.data['view_time']
         for i in dict.keys():
             if dict.get(i) != "":
+                if i == "inclass_score1":
+                    ret.start_score = dict.get(i)
                 if i == "inclass_score1":
                     ret.inclass_score1 = dict.get(i)
                 if i == "inclass_score2":
@@ -540,6 +547,8 @@ def update_detail(request):
                     ret.inclass_score5 = dict.get(i)
                 if i == "inclass_score6":
                     ret.inclass_score6 = dict.get(i)
+                if i == "view_time":
+                    ret.view_time = dict.get(i)
         ret.save()
         msg = "修改成功"
         return render(request, html,
@@ -560,19 +569,61 @@ def update_system(request):
     name = request.session.get('user_name')
     import os
     import time
-    path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib_231328'
+    path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib'
     mtime = os.stat(path).st_mtime
     file_modify_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mtime))
 
     if request.method == "POST":
-        #
         # 调用svm提供的接口，生成新的模型
+        if 'model' in request.POST:
+            if grade_predict.update_system():
+                msg = "系统更新成功"
+                path = r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib'
+                mtime = os.stat(path).st_mtime
+                file_modify_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(mtime))
+                return render(request, 'update_system.html', {'version_id': file_modify_time, 'msg': msg, 'name': 'admin'})
+        # 使用模型更新学生成绩
+        elif 'predict_score' in request.POST:
+            # 读取模型
+            # 之后更新SVM模型后也需要更改路径
+            svm_model = joblib.load(r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\svm.joblib')
+            mm = joblib.load(r'E:\Study\SSPKU\软件工程\小组课题\git\djangoProject_PES\app01\mm')
+
+            ret = models.result_store.objects.filter()
+            data_all = []
+            for i in ret:
+                data_list = []
+                data_list.append(i.start_score)
+                data_list.append(i.inclass_score1)
+                data_list.append(i.inclass_score2)
+                data_list.append(i.inclass_score3)
+                data_list.append(i.inclass_score4)
+                data_list.append(i.inclass_score5)
+                data_list.append(i.inclass_score6)
+                data_list.append(i.view_time)
+                # 归一化
+                data_all.append(data_list)
+            # 预测
+            data_normal = mm.transform(data_all)
+            result_score = svm_model.predict(data_normal)
+            for i in range(len(ret)):
+                object = models.result_store.objects.get(userid=ret[i].userid)
+                object.final_score = result_score[i]
+                object.save()
+            update_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            msg = update_time + "更新成功"
+            return render(request, 'update_system.html', {'version_id': file_modify_time, 'msg': msg, 'name': 'admin'})
         # 调用评价模块的接口，更新学生的评价
-        #
-        msg = "更新成功"
-        time_now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-        return render(request, 'update_system.html',
-                      {'version_id': time_now, 'msg': msg, 'name': 'admin'})
+        elif 'evaluation' in request.POST:
+            from app01 import stat
+            ret = models.result_store.objects.filter()
+            for i in range(len(ret)):
+                object = models.result_store.objects.get(userid=ret[i].userid)
+                object.comment = stat.generate_comment(ret[i].userid)
+                object.save()
+            update_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+            msg = update_time + "更新成功"
+            return render(request, 'update_system.html', {'version_id': file_modify_time, 'msg': msg, 'name': 'admin'})
     return render(request, 'update_system.html', {'version_id': file_modify_time, 'name': name})
 
 
@@ -628,3 +679,9 @@ def update_password(request):
         return render(request, 'update_password.html', {"obj": passwordForm(), 'name': name, 'msg': msg})
     obj = passwordForm()
     return render(request, 'update_password.html', {"obj": obj, 'name': name})
+
+def visualize(request):#views.py给js传值要注意｜safe以及json5.dumps()
+    from app01 import stat
+    student_id=request.session.get("user_id")
+    a=stat.generate_comment(student_id)
+    return render(request,'visualize.html',{'val1':a})

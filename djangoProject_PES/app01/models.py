@@ -11,12 +11,13 @@ class User(models.Model):
 
 class result_store(models.Model):
     userid = models.CharField(max_length=32)
+    start_score = models.FloatField(max_length=32)
     inclass_score1 = models.FloatField(max_length=32)
     inclass_score2 = models.FloatField(max_length=32)
     inclass_score3 = models.FloatField(max_length=32)
     inclass_score4 = models.FloatField(max_length=32)
     inclass_score5 = models.FloatField(max_length=32)
     inclass_score6 = models.FloatField(max_length=32)
-    # view_time = models.FloatField(max_length=32)
+    view_time = models.FloatField(max_length=32)
     final_score = models.FloatField(max_length=32)
     comment = models.CharField(max_length=2048)
