@@ -13,7 +13,7 @@ def activity_count(student_id):
         data=data[0][0]
         return data
     else:
-        raise Exception('查询不到')
+        return 0
 
 def activity_freq(student_id,code):#行为频率
     cursor=connection.cursor()
@@ -23,11 +23,15 @@ def activity_freq(student_id,code):#行为频率
     data=cursor.fetchall()
     if len(data)>0:
         data=data[0][0]
-        all=activity_count(student_id) 
-        freq=round(data/all,3)
+        all=activity_count(student_id)
+        print(all)
+        if all>0:
+            freq=round(data/all,3)
+        else:
+            freq=-1
         return freq
     else:
-        raise Exception('查询不到')
+        return -1
 
 def viewing_time(student_id):#观看时长得分
     cursor=connection.cursor()
@@ -36,6 +40,8 @@ def viewing_time(student_id):#观看时长得分
     data=cursor.fetchall()#rank是保留字
     if len(data)>0:
         data=data[0][0]
+    else:
+        return -1
     cursor.execute("select max(`rank`) from \
     viewing_time_ranking")
     all=cursor.fetchall()
@@ -44,7 +50,7 @@ def viewing_time(student_id):#观看时长得分
         score=(all-data+1)/all*100
         return score
     else:
-        raise Exception('查询出错')
+        return -1
 
 def score_list(student_id):#课堂测验表现
     cursor=connection.cursor()
@@ -60,12 +66,12 @@ def score_list(student_id):#课堂测验表现
                 #2.某些行为表里的学号未出现，3.表内有空字符串
                     l.append(data[i])
                 else:
-                    l.append(0)
+                    l.append(-1)
             return l
         except:
-            raise Exception('查询出现问题')
+            return -1
     else:
-        raise Exception('查询不到')
+        return -1
 
 def scoreAVG(student_id):#课堂测验表现
     cursor=connection.cursor()
@@ -83,14 +89,17 @@ def scoreAVG(student_id):#课堂测验表现
             avg=sum/(len(data)-1)
             return avg
         except:
-            raise Exception('查询出现问题')
+            return -1
     else:
-        raise Exception('查询不到')
+        return -1
 
 
 # 生成对章节测试的评价
 def test_comment(student_id):
     stu=score_list(student_id)
+    if stu==-1:
+        return '无课堂测验记录'
+
     chapters = ["结构化设计","软件过程","详细设计","需求分析",
                 '实现-测试','系统维护']
     thresholds_neg = [25,25,95,20,23,65]
@@ -103,12 +112,12 @@ def test_comment(student_id):
     for i in range(len(chapters)):
         if stu[i] >= thresholds_pos[i]:
             pos_list.append(chapters[i])
-        elif stu[i] <= thresholds_neg[i]:
+        elif stu[i] <= thresholds_neg[i] and stu[i]>=0:
             neg_list.append(chapters[i])
-        else:
+        elif stu[i] > thresholds_neg[i] and stu[i] < thresholds_pos[i]:
             other_list.append(chapters[i])
-    
-    
+        else:
+            0
     pos_str, other_str ,neg_str = "", "", ""
     if pos_list:
         pos_chapter = "、".join(pos_list)
@@ -136,6 +145,9 @@ def test_comment(student_id):
 # 生成对moodle平台的评价
 def moodle_comment(student_id):
     viewing_time_score=viewing_time(student_id)
+    if viewing_time_score==-1:
+        return "无moodle视频观看记录"
+
     if viewing_time_score > 66.7:
         return random.choice(["你从开学到现在在moodle平台上的学习时间较长，请继续保持。:-)",
                              "moodle平台是课余学习的好帮手，到目前为止，你在moodle平台上的学习时间名列前茅，请保持当前的观看习惯。",
@@ -154,7 +166,7 @@ def moodle_performance_comment(student_id):
     activity_freq_stu=activity_freq(student_id,11)
     count_num = random.choice(["到目前为止","截至目前"])
     
-    if activity_freq_stu<=0.05:
+    if activity_freq_stu<=0.05 and activity_freq_stu>=0:
         return count_num + random.choice(["你的moodle学习表现很积极，这是一个很棒的状态，请继续保持！",
                                          "你的moodle学习状态很棒，请保持好当前状态！",
                                          "你的moodle学习参与度很好，希望你继续加油！"]) 
@@ -162,6 +174,8 @@ def moodle_performance_comment(student_id):
         return count_num + random.choice(["你的moodle学习表现有待提高，还需要更加努力提升自己在moodle上的学习，才能够更好的把握本门课的学习重点。",
                                          "你的moodle学习表现不够积极，要注意提升在moodle上的学习，才能获得高效的学习过程。",
                                          "你的moodle学习表现还有较大提升空间，你需要更加努力提升自己在moodle课堂上的学习，才能获得高效的学习过程。"])
+    elif activity_freq_stu<0:
+        return count_num+'系统中没有你的moodle学习记录'
     else:
         return count_num + random.choice(["你的moodle学习表现良好，希望你能够继续坚持下去，同时增加自己在moodle上学习的情况。",
                                           "你的moodle学习表现良好，可以尝试在moodle上多多学习，提高自己的知识水平。",
@@ -173,11 +187,14 @@ def moodle_performance_comment(student_id):
 # 生成对平时测验平均成绩的评价
 def average_score_comment(student_id):
     score=scoreAVG(student_id)
+    if score==-1:
+        return ''
+
     corpus = random.choice(["按照目前你的平时测验平均成绩，",
                            "根据你的平时测验平均成绩,",
                            "通过统计你的平时测验平均成绩,"])
 
-    if score >55 :
+    if score >52 :
         review = random.choice(["你的成绩是比较不错的，请保持当前的学习状态，继续努力，预祝你期末取得一个好成绩!",
                               "你的成绩很棒，请继续加油，保持好学习状态，预祝你期末取得一个好成绩!"])
     elif score< 42:
@@ -192,10 +209,13 @@ corpus = "    亲爱的同学们，短短的一个学期即将结束，我们的
 happy_new_year1 = "最后，感谢同学们一个学期的不离不弃，高度配合，请同学们多提宝贵意见，我们一定认真学习，持续改进！"
 
 def generate_comment(student_id):
-    res = [corpus,test_comment(student_id),
-           moodle_comment(student_id), 
-           moodle_performance_comment(student_id), 
-          average_score_comment(student_id),
-          happy_new_year1]
-#    random.shuffle(res)
-    return "\n    ".join(res)
+    if score_list(student_id)==-1 and activity_count(student_id)==0 and viewing_time(student_id)==-1:
+        return '此用户不存在'
+    else:
+        res = [corpus,test_comment(student_id),
+            moodle_comment(student_id), 
+            moodle_performance_comment(student_id), 
+            average_score_comment(student_id),
+            happy_new_year1]
+    #    random.shuffle(res)
+        return "\n    ".join(res)

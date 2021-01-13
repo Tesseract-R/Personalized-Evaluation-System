@@ -37,5 +37,6 @@ urlpatterns = [
     path(r'update_system/',views.update_system),
     path(r'comment_detail/',views.comment_detail),
     path(r'update_password/',views.update_password),
+    path(r'download_score/',views.download_score),
 
 ]

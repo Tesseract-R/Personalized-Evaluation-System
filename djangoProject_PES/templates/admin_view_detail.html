@@ -26,17 +26,33 @@
                                     </form>
                                     <br>
                                     <br>
-                                    <div>
-                                        学生 {{ student_id }}<br>
-                                        开学成绩 {{ start_score }}<br>
-                                        结构化 {{ inclass_score1 }}<br>
-                                        软件过程 {{ inclass_score2 }}<br>
-                                        详细设计 {{ inclass_score3 }}<br>
-                                        需求分析 {{ inclass_score4 }}<br>
-                                        实现测试 {{ inclass_score5 }}<br>
-                                        维护 {{ inclass_score6 }}<br>
-                                        在线观看时长 {{ view_time }}<br>
+                                    <div class="table">
+                                        <table border="2">
+                                        <tr>
+                                        <td>学生</td>
+                                        <td>平时成绩</td>
+                                        <td>结构化</td>
+                                        <td>软件过程</td>
+                                        <td>详细设计</td>
+                                        <td>需求分析</td>
+                                        <td>实现测试</td>
+                                        <td>维护</td>
+                                        <td>在线观看时长</td>
+                                        </tr>
+                                        <tr>
+                                        <td>{{ student_id }}</td>
+                                        <td>{{ start_score }}</td>
+                                        <td>{{ inclass_score1 }}</td>
+                                        <td>{{ inclass_score2 }}</td>
+                                        <td>{{ inclass_score3 }}</td>
+                                        <td>{{ inclass_score4 }}</td>
+                                        <td>{{ inclass_score5 }}</td>
+                                        <td>{{ inclass_score6 }}</td>
+                                        <td>{{ view_time }}</td>
+                                        </tr>
+                                        </table>
                                     </div>
+                                    <a href="/download_score/">{{ button }}</a>
 								</div>
 							</div>
 						</div>

@@ -1,5 +1,6 @@
 import os
 import joblib
+import pandas as pd
 from django.core.exceptions import ValidationError
 from django.http import FileResponse
 from django.shortcuts import render, HttpResponse, redirect
@@ -273,7 +274,7 @@ def view_score(request):
         final_score = ret[0].final_score
         return render(request, html,
                       {"obj": obj, 'name': name,
-                       'student_id': user_id, 'score': final_score})
+                       'student_id': user_id, 'score': round(final_score, 2)})
     return render(request, html, {'name': name, 'obj': RequestForm()})
 
 
@@ -307,8 +308,8 @@ def view_detail(request):
                       {"obj": obj, 'name': name,
                        'student_id': user_id, 'start_score':start_score, 'inclass_score1': inclass_score1, 'inclass_score2': inclass_score2,
                        'inclass_score3': inclass_score3, 'inclass_score4': inclass_score4,
-                       'inclass_score5': inclass_score5, 'inclass_score6': inclass_score6, 'view_time':view_time})
-    return render(request, html, {'name': name, 'obj': RequestForm()})
+                       'inclass_score5': inclass_score5, 'inclass_score6': inclass_score6, 'view_time':view_time,'button': '下载'})
+    return render(request, html, {'name': name, 'obj': RequestForm(),'button': '下载'})
 
 
 def view_evaluation(request):
@@ -635,13 +636,6 @@ def comment_detail(request):
     """
     userid = request.session.get('user_id')
     ret = models.result_store.objects.filter(userid=userid)
-    structure_design = ret[0].inclass_score1
-    software_process = ret[0].inclass_score2
-    detailed_design = ret[0].inclass_score3
-    demand_analysis = ret[0].inclass_score4
-    realization = ret[0].inclass_score5
-    maintenance = ret[0].inclass_score6
-    final_score = ret[0].final_score
     comment = ret[0].comment
     return FileResponse(comment)
 
@@ -680,8 +674,41 @@ def update_password(request):
     obj = passwordForm()
     return render(request, 'update_password.html', {"obj": obj, 'name': name})
 
+
 def visualize(request):#views.py给js传值要注意｜safe以及json5.dumps()
     from app01 import stat
     student_id=request.session.get("user_id")
     a=stat.generate_comment(student_id)
     return render(request,'visualize.html',{'val1':a})
+
+
+def download_score(request):
+    """
+    下载（目前没办法应对并发的下载请求）
+    :param request:
+    :return:
+    """
+    if not request.session.get('is_login', None):
+        return redirect("/index/")
+    name = request.session.get('user_name')
+    html = 'view_detail.html'
+    if request.session.get('user_type') == 'ADMIN':
+        html = 'admin_' + html
+    # 生成excel
+    ret = models.result_store.objects.filter()
+    list1 = []
+    for i in ret:
+        list1.append({"Student_id": i.userid, "Start_score": i.start_score, "Structured_design": i.inclass_score1, "Software_process": i.inclass_score2,
+                      "Detailed_design": i.inclass_score3, "Demand_analysis": i.inclass_score4, "Test": i.inclass_score5,
+                      "Maintenance": i.inclass_score6, "View_time": i.view_time,"Final_score": i.final_score})
+    df = pd.DataFrame(list1, columns=['Student_id', 'Start_score', 'Structured_design',"Software_process","Detailed_design",
+                                      "Demand_analysis", "Test", "Maintenance", "View_time", "Final_score"])
+    df.to_csv(r"score_all.csv", index=False)
+
+    if os.path.exists('score_all.csv'):
+        file = open('score_all.csv', 'rb')
+        response = FileResponse(file)
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = 'attachment;filename="score.csv"'
+        return response
+    return render(request, html, {'name': name, 'obj': RequestForm()})
